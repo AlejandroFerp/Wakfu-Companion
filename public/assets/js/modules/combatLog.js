@@ -46,6 +46,10 @@ function renderHyperObservations() {
   const cost = nextCycleCost(hyperObserved);
   metric("Próximo ciclo", cost === null ? "—" : cost === "agotado" ? "Sin usos" : `${cost} BC`);
   const indicators = add(hyperPanel, "div", "class-effects");
+  const back = add(indicators, "span", `class-effect ${hyperObserved.lastDamageBack === true ? "is-active" : "is-unknown"}`);
+  add(back, "span", "class-effect-icon", "↶");
+  add(back, "span", "", hyperObserved.lastDamageBack === true ? "Último daño: espalda" : hyperObserved.lastDamageBack === false ? "Último daño: espalda no indicada" : "Espalda: sin datos");
+  back.title = "Última línea de daño del combate; el registro no confirma quién atacó.";
   const observed = hyperObserved.effects[hyperTarget.value] || {};
   for (const [key, label] of [["debilidad", "Debilidad"], ["luminiscencia", "Luminiscencia"]]) {
     const item = observed[key];

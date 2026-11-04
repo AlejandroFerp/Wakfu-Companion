@@ -1,6 +1,6 @@
 // Evidence-based observations from Spanish combat logs, scoped by character.
 function createHypermageObservations() {
-  return { abundance: null, breeze: null, lastGeneratedRune: null, runes: { fire: null, water: null, air: null, earth: null }, lastBCChange: null, lastElementalCycle: null, cycleUses: null, turn: 0, bcFullSignal: false, effects: {} };
+  return { abundance: null, breeze: null, lastGeneratedRune: null, runes: { fire: null, water: null, air: null, earth: null }, lastBCChange: null, lastElementalCycle: null, cycleUses: null, turn: 0, bcFullSignal: false, lastDamageBack: null, effects: {} };
 }
 
 function hyperRuneElement(name) {
@@ -26,10 +26,15 @@ function observeHypermageLine(previous, character, line) {
     next.cycleUses = null;
     next.effects = {};
     next.bcFullSignal = false;
+    next.lastDamageBack = null;
     next.runes = { fire: null, water: null, air: null, earth: null };
     next.lastGeneratedRune = null;
     next.abundance = null;
     return next;
+  }
+  // Damage lines identify the target but do not reliably identify the attacker.
+  if (/^.+?:\s*-\s*[\d.,]+\s*(?:PdV|PV|HP)\b/i.test(content)) {
+    next.lastDamageBack = /\b(?:de|por la|por) espalda\b/i.test(content);
   }
   const expired = content.match(/^(.+?): ya no se encuentra bajo el estado ['’](Debilidad[^']*|Luminiscencia)['’]/i);
   if (expired) {
