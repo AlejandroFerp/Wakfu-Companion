@@ -129,27 +129,27 @@
         <div class="tool-panel">
           <div class="panel-header">
             <img src="./assets/img/headers/item_tracker.png" class="header-label-icon" onerror="this.style.display='none'" />
-            <span class="header-label">Tracker</span>
+            <span class="header-label">Seguimiento</span>
 
             <!-- NEW: Profession Filters -->
             <div class="tracker-filters">
-              <button class="filter-icon-btn active" id="tf-all" onclick="setTrackerFilter('SHOW_ALL')" title="Show All">ALL</button>
-              <button class="filter-icon-btn" id="tf-farmer" onclick="setTrackerFilter('Farmer')" title="Farmer">
+              <button class="filter-icon-btn active" id="tf-all" onclick="setTrackerFilter('SHOW_ALL')" title="Mostrar todo">TODO</button>
+              <button class="filter-icon-btn" id="tf-farmer" onclick="setTrackerFilter('Farmer')" title="Campesino">
                 <img src="./assets/img/resources/farmer.png" onerror="this.style.display='none'" />
               </button>
-              <button class="filter-icon-btn" id="tf-fisherman" onclick="setTrackerFilter('Fisherman')" title="Fisherman">
+              <button class="filter-icon-btn" id="tf-fisherman" onclick="setTrackerFilter('Fisherman')" title="Pescador">
                 <img src="./assets/img/resources/fisherman.png" onerror="this.style.display='none'" />
               </button>
-              <button class="filter-icon-btn" id="tf-herbalist" onclick="setTrackerFilter('Herbalist')" title="Herbalist">
+              <button class="filter-icon-btn" id="tf-herbalist" onclick="setTrackerFilter('Herbalist')" title="Herborista">
                 <img src="./assets/img/resources/herbalist.png" onerror="this.style.display='none'" />
               </button>
-              <button class="filter-icon-btn" id="tf-lumberjack" onclick="setTrackerFilter('Lumberjack')" title="Lumberjack">
+              <button class="filter-icon-btn" id="tf-lumberjack" onclick="setTrackerFilter('Lumberjack')" title="Leñador">
                 <img src="./assets/img/resources/lumberjack.png" onerror="this.style.display='none'" />
               </button>
-              <button class="filter-icon-btn" id="tf-miner" onclick="setTrackerFilter('Miner')" title="Miner">
+              <button class="filter-icon-btn" id="tf-miner" onclick="setTrackerFilter('Miner')" title="Minero">
                 <img src="./assets/img/resources/miner.png" onerror="this.style.display='none'" />
               </button>
-              <button class="filter-icon-btn" id="tf-trapper" onclick="setTrackerFilter('Trapper')" title="Trapper">
+              <button class="filter-icon-btn" id="tf-trapper" onclick="setTrackerFilter('Trapper')" title="Trampero">
                 <img src="./assets/img/resources/trapper.png" onerror="this.style.display='none'" />
               </button>
             </div>
@@ -166,21 +166,21 @@
             <button class="pip-btn" onclick="togglePiP('tracker-list', 'Item Tracker')" title="Picture in Picture">⧉</button>
           </div>
           <div class="tracker-controls">
-            <input type="text" id="item-input" list="item-datalist" class="tracker-select" placeholder="Search item..." autocomplete="off" />
+            <input type="text" id="item-input" list="item-datalist" class="tracker-select" placeholder="Buscar objeto..." autocomplete="off" />
             <datalist id="item-datalist"></datalist>
-            <button class="add-track-btn" onclick="addTrackedItem()">Add</button>
+            <button class="add-track-btn" onclick="addTrackedItem()">Añadir</button>
           </div>
           <div id="tracker-list">
-            <div class="empty-state">Add items to track...</div>
+            <div class="empty-state">Añade objetos para seguirlos...</div>
           </div>
 
           <div id="tracker-total-footer" class="tracker-footer" style="display: none">
             <div class="tf-row">
-              <span class="tf-label">Current:</span>
+              <span class="tf-label">Actual:</span>
               <span id="tf-val-current" class="tf-val">0 ₭</span>
             </div>
             <div class="tf-row">
-              <span class="tf-label">Expected:</span>
+              <span class="tf-label">Previsto:</span>
               <span id="tf-val-target" class="tf-val">0 ₭</span>
             </div>
           </div>

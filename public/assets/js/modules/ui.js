@@ -561,7 +561,7 @@ function renderTracker() {
 
   listEl.innerHTML = "";
   if (trackedItems.length === 0) {
-    listEl.innerHTML = '<div class="empty-state">Add items to track...</div>';
+    listEl.innerHTML = '<div class="empty-state">Añade objetos para seguirlos...</div>';
     if (footerEl) {
       document.getElementById("tf-val-current").textContent = "0 ₭";
       document.getElementById("tf-val-target").textContent = "0 ₭";
@@ -595,7 +595,7 @@ function renderTracker() {
 
   if (displayItems.length === 0) {
     listEl.innerHTML =
-      '<div class="empty-state">No items in this category.</div>';
+      '<div class="empty-state">No hay objetos en esta categoría.</div>';
     return;
   }
 
