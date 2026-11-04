@@ -1,0 +1,44 @@
+<!doctype html><meta charset="utf-8"><title>Prueba de combate personal</title>
+<script>localStorage.removeItem('wakfu_fight_history');localStorage.removeItem('wakfu_live_combat_state');</script>
+<iframe id="app" src="../public/index.html" width="1200" height="800"></iframe>
+<p id="result">Comprobando...</p>
+<script>
+document.getElementById('app').onload = async () => {
+  const app = document.getElementById('app').contentWindow;
+  const result = document.getElementById('result');
+  try {
+    app.saveFileHandleToDB = async () => {};
+    let content = '';
+    const handle = {name:'wakfu_chat.log', async getFile(){return new File([content], 'wakfu_chat.log');}};
+    const drop = new app.Event('drop',{bubbles:true,cancelable:true});
+    Object.defineProperty(drop,'dataTransfer',{value:{items:[{kind:'file',async getAsFileSystemHandle(){return handle;}}]}});
+    app.document.getElementById('drop-zone').dispatchEvent(drop);
+    await new Promise(resolve=>setTimeout(resolve,200));
+    content = '12:00:00,000 - [Información (combate)] Jugador lanza el hechizo Piratería.\n12:00:01,000 - [Información (combate)] Objetivo: -100 PdV (fuego)\n';
+    await app.parseFile();
+    const row = app.document.querySelector('.player-block[data-name="Jugador"] .player-row');
+    if (!row) throw Error('No apareció el personaje');
+    row.click();
+    let block = app.document.querySelector('.player-block[data-name="Jugador"]');
+    if (!block.textContent.includes('Lanza Piratería') || !block.textContent.includes('Turno sin identificar')) throw Error('Falta el detalle personal');
+    block.querySelector('.personal-turn-button').click();
+    content += '12:00:01,500 - [Información (combate)] Jugador lanza el hechizo Steamerator.\n';
+    await app.parseFile();
+    block = app.document.querySelector('.player-block[data-name="Jugador"]');
+    if (!block.textContent.includes('Lanza Steamerator')) throw Error('No se actualizó el detalle al lanzar un hechizo sin daño');
+    content += '12:00:02,000 - [Información (combate)] Jugador lanza el hechizo Piratería.\n12:00:03,000 - [Información (combate)] Objetivo: -300 PdV (fuego)\n12:00:03,100 - [Información (combate)] Jugador: -2 PM\n';
+    await app.parseFile();
+    block = app.document.querySelector('.player-block[data-name="Jugador"]');
+    if (!block.textContent.includes('DPT entre marcas manuales: 300') || !block.textContent.includes('Turno 1 (marcado)') || !block.textContent.includes('Evento sobre el personaje: -2 PM')) throw Error('El DPT, el turno o el efecto no son correctos');
+    content += '12:00:04,000 - [Información (combate)] Combate terminado.\n';
+    await app.parseFile();
+    const history = JSON.parse(app.localStorage.getItem('wakfu_fight_history'));
+    if (history[0].personalTurnDamage.Jugador !== 300 || history[0].personalEvents.Jugador.length < 4) throw Error('No se guardó el detalle en el historial');
+    app.document.getElementById('btn-hist-0').click();
+    const historical = app.document.querySelector('.player-block[data-name="Jugador"]');
+    if (!historical || !historical.textContent.includes('DPT entre marcas manuales: 300') || !historical.textContent.includes('Lanza Piratería')) throw Error('El detalle histórico no se muestra');
+    result.textContent='PRUEBA CORRECTA';
+  } catch(error) {result.textContent='PRUEBA FALLIDA: '+error.message;}
+};
+</script>
+

@@ -47,6 +47,10 @@ window.toggleIconVariant = function (playerName, imgEl) {
 
 // Combat State
 let fightData = {}; // Damage
+let personalCombatEvents = {};
+let personalTurns = {};
+let personalTurnDamage = {};
+let combatEventTime = "";
 let healData = {}; // Healing
 let armorData = {}; // Armor
 let playerClasses = {}; // Map player Name -> Class Icon Filename
@@ -83,3 +87,4 @@ let trackedItems = [];
 
 // Auto Fight State
 let awaitingNewFight = false;
+

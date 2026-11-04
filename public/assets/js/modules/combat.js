@@ -25,6 +25,9 @@ function processFightLog(line) {
     awaitingNewFight = false;
   }
 
+  const affected = content.match(/^(.+?):\s+(.+)$/);
+  if (affected) recordPersonalCombatEvent(affected[1].trim(), { type: "affected", message: affected[2].trim() });
+
   // 1. Turn/Time Carryover - RESET CASTER
   if (content.includes("carried over") || content.includes("tour suivant")) {
     currentCaster = null;
@@ -53,6 +56,7 @@ function processFightLog(line) {
       currentCaster = casterCandidate;
       currentSpell = castSpell;
       detectClass(currentCaster, currentSpell);
+      recordPersonalCombatEvent(currentCaster, { type: "cast", spell: currentSpell });
     }
     return;
   }
@@ -216,8 +220,29 @@ function updateCombatData(dataSet, player, spell, amount, element) {
   }
   dataSet[player].spells[spellKey].val += amount;
 
+  if (dataSet === fightData) {
+    recordPersonalCombatEvent(player, { type: "damage", spell, amount });
+    if (personalTurns[player]) personalTurnDamage[player] = (personalTurnDamage[player] || 0) + amount;
+  }
+
   // Mark as dirty so we know we have data to save
   hasUnsavedChanges = true;
+}
+
+function recordPersonalCombatEvent(player, event) {
+  if (!player || player === "Unknown") return;
+  const events = personalCombatEvents[player] || (personalCombatEvents[player] = []);
+  events.push({ ...event, time: event.time || combatEventTime, turn: personalTurns[player] || null });
+  if (events.length > 200) events.shift();
+  if (expandedPlayers.has(player)) lastRenderSignature = "";
+}
+
+function markPersonalTurn(player) {
+  if (currentViewIndex !== "live") return;
+  personalTurns[player] = (personalTurns[player] || 0) + 1;
+  recordPersonalCombatEvent(player, { type: "turn", time: new Date().toLocaleTimeString("es-ES", { hour12: false }) });
+  lastRenderSignature = "";
+  renderMeter();
 }
 
 function detectClass(playerName, spellName) {
@@ -252,6 +277,9 @@ function saveFightToHistory() {
     armor: JSON.parse(JSON.stringify(armorData)),
     classes: JSON.parse(JSON.stringify(playerClasses)),
     overrides: JSON.parse(JSON.stringify(manualOverrides)),
+    personalEvents: JSON.parse(JSON.stringify(personalCombatEvents)),
+    personalTurns: { ...personalTurns },
+    personalTurnDamage: { ...personalTurnDamage },
     timestamp: new Date().toLocaleTimeString(),
   };
 
@@ -285,6 +313,9 @@ function performReset(isAuto = false) {
   fightData = {};
   healData = {};
   armorData = {};
+  personalCombatEvents = {};
+  personalTurns = {};
+  personalTurnDamage = {};
 
   // 3. Reset State
   currentCaster = "Unknown";
@@ -695,6 +726,8 @@ async function parseFile() {
 function processLine(line) {
   if (!line || line.trim() === "") return;
 
+  combatEventTime = (line.match(/^(\d{2}:\d{2}:\d{2})/) || [])[1] || "";
+
   const lineLower = line.toLowerCase();
 
   if (typeof appendCombatLog === "function") appendCombatLog(line);
@@ -746,6 +779,9 @@ function saveLiveCombatState() {
     fightData,
     healData,
     armorData,
+    personalCombatEvents,
+    personalTurns,
+    personalTurnDamage,
     playerClasses,
     manualOverrides,
     summonBindings,
@@ -765,6 +801,9 @@ function loadLiveCombatState() {
     fightData = state.fightData || {};
     healData = state.healData || {};
     armorData = state.armorData || {};
+    personalCombatEvents = state.personalCombatEvents || {};
+    personalTurns = state.personalTurns || {};
+    personalTurnDamage = state.personalTurnDamage || {};
     playerClasses = state.playerClasses || {};
     manualOverrides = state.manualOverrides || {};
     summonBindings = state.summonBindings || {};

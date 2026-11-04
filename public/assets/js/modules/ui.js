@@ -183,6 +183,36 @@ function renderMeter() {
         const spellContainer = document.createElement("div");
         spellContainer.className = "spell-list open";
 
+        const events = currentViewIndex === "live" ? (personalCombatEvents[p.name] || []) : (fightHistory[currentViewIndex]?.personalEvents?.[p.name] || []);
+        const turns = currentViewIndex === "live" ? (personalTurns[p.name] || 0) : (fightHistory[currentViewIndex]?.personalTurns?.[p.name] || 0);
+        const detail = document.createElement("div");
+        detail.className = "personal-combat-detail";
+        if (currentViewIndex === "live") {
+          const mark = document.createElement("button");
+          mark.type = "button";
+          mark.className = "personal-turn-button";
+          mark.dataset.player = p.name;
+          mark.textContent = "Marcar inicio de turno";
+          mark.title = "Marca manualmente cada inicio de turno. El daño entre marcas puede incluir daño fuera de turno.";
+          detail.appendChild(mark);
+        }
+        const summary = document.createElement("div");
+        const markedDamage = currentViewIndex === "live" ? (personalTurnDamage[p.name] || 0) : (fightHistory[currentViewIndex]?.personalTurnDamage?.[p.name] || 0);
+        summary.textContent = turns ? `DPT entre marcas manuales: ${Math.round(markedDamage / turns).toLocaleString()} · ${turns} turno(s) marcados · puede incluir daño fuera de turno · últimos 200 eventos` : "DPT no disponible: marca el inicio de cada turno. Las acciones anteriores quedan sin turno.";
+        detail.appendChild(summary);
+        const log = document.createElement("div");
+        log.className = "personal-combat-log";
+        if (!events.length) log.textContent = "Sin acciones registradas para este combate.";
+        for (const event of events) {
+          const entry = document.createElement("div");
+          const turn = event.turn ? `Turno ${event.turn} (marcado)` : "Turno sin identificar";
+          const description = event.type === "cast" ? `Lanza ${event.spell}` : event.type === "damage" ? `${event.spell}: ${event.amount.toLocaleString()} de daño atribuido` : event.type === "affected" ? `Evento sobre el personaje: ${event.message}` : "Inicio de turno marcado";
+          entry.textContent = `${event.time || "--:--:--"} · ${turn} · ${description}`;
+          log.appendChild(entry);
+        }
+        detail.appendChild(log);
+        spellContainer.appendChild(detail);
+
         const spells = Object.entries(p.spells)
           .map(([key, data]) => ({
             val: data.val,
@@ -210,7 +240,9 @@ function renderMeter() {
                     <div class="spell-percent">${spellContribPercent}</div>
                 </div>`;
         }
-        spellContainer.innerHTML = spellsHtml;
+        const aggregate = document.createElement("div");
+        aggregate.innerHTML = spellsHtml;
+        spellContainer.appendChild(aggregate);
         rowBlock.appendChild(spellContainer);
       }
 
@@ -238,6 +270,11 @@ function setupDragAndDrop() {
 
   // 1. CLICK HANDLING (Expand/Collapse + Icon Toggle)
   newContainer.addEventListener("click", (e) => {
+    const markTurn = e.target.closest(".personal-turn-button");
+    if (markTurn) {
+      markPersonalTurn(markTurn.dataset.player);
+      return;
+    }
     // Handle Icon Variant Toggle
     if (e.target.classList.contains("player-icon-img")) {
       const name = e.target.dataset.name;
