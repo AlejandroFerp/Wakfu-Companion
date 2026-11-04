@@ -1,0 +1,23 @@
+<!doctype html><meta charset="utf-8"><title>Prueba de texto del combate</title>
+<script>localStorage.removeItem('wakfu_fight_history');localStorage.removeItem('wakfu_live_combat_state');localStorage.removeItem('wakfu_overrides');</script>
+<iframe id="app" src="../public/index.html" width="1000" height="600"></iframe><p id="result">Comprobando...</p>
+<script>
+document.getElementById('app').onload=async()=>{
+  const app=document.getElementById('app').contentWindow,result=document.getElementById('result');
+  try {
+    app.saveFileHandleToDB=async()=>{};let content='';
+    const handle={name:'wakfu_chat.log',async getFile(){return new File([content],'wakfu_chat.log');}};
+    const drop=new app.Event('drop',{bubbles:true,cancelable:true});
+    Object.defineProperty(drop,'dataTransfer',{value:{items:[{kind:'file',async getAsFileSystemHandle(){return handle;}}]}});
+    app.document.getElementById('drop-zone').dispatchEvent(drop);await new Promise(r=>setTimeout(r,200));
+    content='12:00:00,000 - [Información (combate)] X<em>Y</em> lanza el hechizo Prueba <b>especial</b>.\n12:00:01,000 - [Información (combate)] Objetivo: -10 PdV (agua)\n';
+    await app.parseFile();
+    const list=app.document.getElementById('list-unknown');
+    const row=list.querySelector('.player-row');
+    if(!row || !row.textContent.includes('X<em>Y</em>') || row.querySelector('em')) throw Error('El nombre no se mostró como texto literal');
+    row.click();
+    if(!list.textContent.includes('Prueba <b>especial</b>') || list.querySelector('b')) throw Error('El hechizo no se mostró como texto literal');
+    result.textContent='PRUEBA CORRECTA';
+  }catch(error){result.textContent='PRUEBA FALLIDA: '+error.message;}
+};
+</script>

@@ -2,6 +2,12 @@
 
 let lastRenderSignature = "";
 
+function escapeMeterText(value) {
+  return String(value).replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[character]);
+}
+
 function getMeterParticipants(dataSet, eventsByPlayer) {
   const players = Object.values(dataSet || {});
   const known = new Set(players.map((player) => player.name));
@@ -162,10 +168,7 @@ function renderMeter() {
             const currentSrc = isAlt
               ? `./assets/img/classes/${classIconName}-f.png`
               : `./assets/img/classes/${classIconName}.png`;
-            iconHtml = `<img src="${currentSrc}" class="class-icon player-icon-img" data-name="${p.name.replace(
-              /"/g,
-              "&quot;"
-            )}" onerror="this.src='./assets/img/classes/not_found.png';">`;
+            iconHtml = `<img src="${currentSrc}" class="class-icon player-icon-img" data-name="${escapeMeterText(p.name)}" onerror="this.src='./assets/img/classes/not_found.png';">`;
           } else {
             // UNKNOWN ENTITY
             iconHtml = `<img src="./assets/img/classes/not_found.png" class="class-icon">`;
@@ -197,7 +200,7 @@ function renderMeter() {
         <div class="player-row">
             <div class="player-bg-bar ${barClass}" style="width: ${barPercent}%"></div>
             <div class="player-name"><span class="caret">▶</span>${iconHtml}${
-        p.name
+        escapeMeterText(p.name)
       }</div>
             <div class="player-total ${textClass}">${p.total.toLocaleString()}</div>
             <div class="player-percent">${totalPercent}</div>
@@ -283,8 +286,8 @@ function renderMeter() {
                 <div class="spell-row">
                     <div class="spell-bg-bar" style="width: ${spellBarPercent}%"></div>
                     <div class="spell-info">
-                        <img src="./assets/img/elements/${iconName}.png" class="spell-icon" onerror="this.src='./assets/img/elements/neutral.png'">
-                        <span class="spell-name">${s.realName}</span>
+                        <img src="./assets/img/elements/${escapeMeterText(iconName)}.png" class="spell-icon" onerror="this.src='./assets/img/elements/neutral.png'">
+                        <span class="spell-name">${escapeMeterText(s.realName)}</span>
                     </div>
                     <div class="spell-val">${s.val.toLocaleString()}</div>
                     <div class="spell-percent">${spellContribPercent}</div>
