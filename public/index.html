@@ -203,6 +203,11 @@
             <label>Descripciones locales <input id="combat-spell-import" type="file" accept=".json,application/json" /></label>
             <span id="combat-spell-status">Opcional: importa las descripciones de tu juego.</span>
           </div>
+          <div class="combat-log-reference">
+            <label>Hipermago <input id="hyper-character" type="text" placeholder="Nombre del personaje" autocomplete="off" /></label>
+            <button type="button" class="pip-btn" onclick="togglePiP('hyper-observations', 'Hipermago')" aria-label="Abrir indicadores del hipermago en ventana flotante">⧉</button>
+            <div id="hyper-observations" aria-live="polite">Escribe el nombre de tu hipermago para seguir los eventos.</div>
+          </div>
           <div id="combat-log-list" role="log" aria-label="Registro de combate" aria-live="off">
             <div class="empty-state">Esperando eventos de combate...</div>
           </div>
@@ -804,7 +809,8 @@
     <script src="assets/js/modules/utils.js"></script>
     <script src="assets/js/modules/filesystem.js"></script>
     <script src="assets/js/modules/chat.js"></script>
-    <script src="assets/js/modules/combatLog.js?v=3"></script>
+    <script src="assets/js/modules/hypermageRules.js"></script>
+    <script src="assets/js/modules/combatLog.js?v=4"></script>
     <script src="assets/js/modules/combat.js"></script>
     <script src="assets/js/modules/tracker.js"></script>
     <script src="assets/js/modules/forecast.js"></script>

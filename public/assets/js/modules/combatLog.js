@@ -6,6 +6,23 @@ const combatLogSearch = document.getElementById("combat-log-search");
 const combatSpellImport = document.getElementById("combat-spell-import");
 const combatSpellStatus = document.getElementById("combat-spell-status");
 const MAX_COMBAT_LOG_EVENTS = 1000;
+const hyperCharacter = document.getElementById("hyper-character");
+const hyperPanel = document.getElementById("hyper-observations");
+let hyperObserved = createHypermageObservations();
+
+function renderHyperObservations() {
+  if (!hyperPanel) return;
+  if (!hyperCharacter.value.trim()) {
+    hyperPanel.textContent = "Escribe el nombre de tu hipermago para seguir los eventos.";
+    return;
+  }
+  const value = v => v === null ? "sin observar" : String(v);
+  hyperPanel.textContent = `Último observado · Abundancia: ${value(hyperObserved.abundance)} · Brisa: ${value(hyperObserved.breeze)} · Última runa guardada: ${value(hyperObserved.lastGeneratedRune)} · Último evento de BC: ${value(hyperObserved.lastBCChange)} · Próximo ciclo: desconocido`;
+}
+if (hyperCharacter) hyperCharacter.addEventListener("input", () => {
+  hyperObserved = createHypermageObservations();
+  renderHyperObservations();
+});
 let combatSpellDescriptions = {};
 try { combatSpellDescriptions = JSON.parse(localStorage.getItem("wakfu_local_spell_descriptions") || "{}"); } catch (_) {}
 
@@ -48,7 +65,7 @@ function classifyCombatEvent(text) {
   if (/^.+?:\s*-\s*[\d.,]+\s*(?:PdV|PV|HP)\b/i.test(text)) return "damage";
   if (/^.+?:\s*\+\s*[\d.,]+\s*(?:PdV|PV|HP)\b/i.test(text)) return "heal";
   if (/^.+?:\s*[+-]?\s*[\d.,]+\s*(?:Armadura|Armor|Armure)\b/i.test(text)) return "armor";
-  if (/^.+?:\s*[+-]?\s*[\d.,]+\s*(?:PA|PM|PW|PE|Puntos?\s+de\s+Stasis|Punto\(s\)\s+de\s+Stasis)\b/i.test(text)) return "resource";
+  if (/^.+?:\s*[+-]?\s*[\d.,]+\s*(?:PA|PM|PW|PE|BC|Puntos?\s+de\s+Stasis|Punto\(s\)\s+de\s+Stasis)\b/i.test(text)) return "resource";
   if (/^.+?:\s*(?:es empujad[oa]|es atra[ií]d[oa]|se desplaza|cambia de posici[oó]n|se teletransporta)\b/i.test(text)) return "movement";
   if (/^.+?:\s*invoca\b/i.test(text)) return "summon";
   if (/^.+?:\s*.+\((?:[+-]?\d+\s*niv\.|niv\.\s*\d+)\)/i.test(text)) return "state";
@@ -73,6 +90,10 @@ function updateCombatLogFilters() {
 function appendCombatLog(line) {
   const match = line.match(/^(\d{2}:\d{2}:\d{2}),\d+\s+-\s+\[(?:Información \(combate\)|Information \(combat\)|Fight Log|Registro de lutas)\]\s*(.*)$/i);
   if (!match || !combatLogList) return;
+  if (hyperCharacter && hyperCharacter.value.trim()) {
+    hyperObserved = observeHypermageLine(hyperObserved, hyperCharacter.value.trim(), line);
+    renderHyperObservations();
+  }
   const atBottom = combatLogList.scrollHeight - combatLogList.scrollTop - combatLogList.clientHeight < 40;
   const empty = combatLogList.querySelector(".empty-state");
   if (empty) empty.remove();
