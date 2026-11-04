@@ -1,0 +1,30 @@
+<!doctype html><meta charset="utf-8"><title>Prueba de recuperación del combate</title>
+<script>localStorage.removeItem('wakfu_fight_history');localStorage.removeItem('wakfu_live_combat_state');localStorage.removeItem('wakfu_overrides');</script>
+<iframe id="app" src="../public/index.html" width="1000" height="600"></iframe><p id="result">Comprobando...</p>
+<script>
+const frame=document.getElementById('app'),result=document.getElementById('result');let phase=0;
+frame.onload=async()=>{
+  const app=frame.contentWindow;
+  try {
+    if(phase===0){
+      phase=1;app.saveFileHandleToDB=async()=>{};let content='';
+      const handle={name:'wakfu_chat.log',async getFile(){return new File([content],'wakfu_chat.log');}};
+      const drop=new app.Event('drop',{bubbles:true,cancelable:true});
+      Object.defineProperty(drop,'dataTransfer',{value:{items:[{kind:'file',async getAsFileSystemHandle(){return handle;}}]}});
+      app.document.getElementById('drop-zone').dispatchEvent(drop);await new Promise(r=>setTimeout(r,200));
+      content='12:00:00,000 - [Información (combate)] Apoyo lanza el hechizo Piratería.\n';
+      await app.parseFile();app.saveLiveCombatState();
+      if(!app.localStorage.getItem('wakfu_live_combat_state')) throw Error('No se guardó el combate con solo hechizos');
+      frame.src='../public/index.html?restore=1';
+    }else{
+      if(!app.document.querySelector('.player-block[data-name="Apoyo"]')) throw Error('No se recuperó el personaje al recargar');
+      app.processLine('12:00:01,000 - [Información (combate)] Combate terminado.');
+      const history=JSON.parse(app.localStorage.getItem('wakfu_fight_history') || '[]');
+      if(history.length!==1 || !history[0].personalEvents.Apoyo) throw Error('No se guardó el combate recuperado en el historial');
+      app.performReset();
+      if(JSON.parse(app.localStorage.getItem('wakfu_fight_history') || '[]').length!==1) throw Error('Se duplicó el combate al reiniciar');
+      result.textContent='PRUEBA CORRECTA';
+    }
+  }catch(error){result.textContent='PRUEBA FALLIDA: '+error.message;}
+};
+</script>

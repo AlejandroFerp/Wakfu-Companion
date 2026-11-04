@@ -241,6 +241,7 @@ function recordPersonalCombatEvent(player, event) {
   const events = personalCombatEvents[player] || (personalCombatEvents[player] = []);
   events.push({ ...event, time: event.time || combatEventTime, turn: personalTurns[player] || null });
   if (events.length > 200) events.shift();
+  if (event.type === "cast" || event.type === "affected") hasUnsavedChanges = true;
   if (expandedPlayers.has(player)) lastRenderSignature = "";
 }
 
@@ -275,7 +276,7 @@ function detectClass(playerName, spellName) {
 function saveFightToHistory() {
   flushPendingArmorDamage();
   // 1. Check if there is data
-  if (Object.keys(fightData).length === 0 && Object.keys(healData).length === 0 && Object.keys(armorData).length === 0) return;
+  if (Object.keys(fightData).length === 0 && Object.keys(healData).length === 0 && Object.keys(armorData).length === 0 && Object.keys(personalCombatEvents).length === 0) return;
 
   // 2. NEW: Check if we actually have new changes since last save
   if (!hasUnsavedChanges) return;
@@ -799,7 +800,7 @@ function processLine(line) {
 }
 
 function saveLiveCombatState() {
-  if (Object.keys(fightData).length === 0 && Object.keys(healData).length === 0 && Object.keys(armorData).length === 0 && !pendingArmorDamage) return;
+  if (Object.keys(fightData).length === 0 && Object.keys(healData).length === 0 && Object.keys(armorData).length === 0 && Object.keys(personalCombatEvents).length === 0 && !pendingArmorDamage) return;
 
   flushPendingArmorDamage();
 
@@ -816,6 +817,7 @@ function saveLiveCombatState() {
     summonBindings,
     fightStartTime,
     awaitingNewFight,
+    hasUnsavedChanges,
   };
   localStorage.setItem("wakfu_live_combat_state", JSON.stringify(state));
 }
@@ -839,8 +841,9 @@ function loadLiveCombatState() {
     summonBindings = state.summonBindings || {};
     fightStartTime = state.fightStartTime || null;
     awaitingNewFight = state.awaitingNewFight || false;
+    hasUnsavedChanges = typeof state.hasUnsavedChanges === "boolean" ? state.hasUnsavedChanges : !awaitingNewFight;
 
-    if (Object.keys(fightData).length > 0 || Object.keys(healData).length > 0 || Object.keys(armorData).length > 0) {
+    if (Object.keys(fightData).length > 0 || Object.keys(healData).length > 0 || Object.keys(armorData).length > 0 || Object.keys(personalCombatEvents).length > 0) {
       window.isRestoredSession = true;
     }
 
