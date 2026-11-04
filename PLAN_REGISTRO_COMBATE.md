@@ -26,3 +26,15 @@ Mostrar una cronología legible de cada combate, conservando los medidores agreg
 10. Traducir progresivamente el resto de la interfaz y comprobar usabilidad, móvil, accesibilidad y rendimiento con combates largos.
 
 Cada número puede dividirse en varios commits pequeños. Las pruebas con el juego abierto requieren una pelea real y confirmar el resultado visual; las pruebas automáticas no sustituyen esa verificación. Si una fase no puede validarse, se dejará documentada sin afirmar que está terminada.
+
+## Indicadores flotantes por clase
+
+Añadir, después de consolidar el registro, un panel flotante configurable por personaje y clase. Mantener las reglas pequeñas, documentadas y con pruebas usando registros anonimizados. No dar por conocido un estado anterior a la conexión, ni calcular valores sin evidencia suficiente; señalar «desconocido» cuando falten datos y ofrecer corrección manual.
+
+1. Crear un sistema de reglas por clase, selección de personaje y panel flotante, con almacenamiento local y prueba de eventos, reinicios y varias instancias de la misma clase.
+2. Selotrop: investigar Portal Celestial - Contador y Don Celestial; contrastar si los niveles escritos son totales, cambios o reinicios antes de mostrar acumulaciones.
+3. Hipermago: investigar Brisa Cuadramental Almacenada, Abundancia, generación y consumo de runas, y última runa; diferenciar el último evento observado del estado vigente.
+4. Ciclo elemental: registrar BC y eventos relacionados, investigar coste base, modificadores, orden de aplicación y reseteos con ejemplos reales; mostrar el coste próximo solo si se puede calcular y verificar, o «desconocido».
+5. Añadir iconos y avisos configurables cuando existan datos fiables; verificar por separado en combate en directo y contemplar reconexiones a mitad de pelea.
+
+Evidencia inicial: el registro local contiene eventos de Portal Celestial - Contador, Brisa Cuadramental Almacenada, Abundancia, runas generadas y consumidas y variaciones de BC. No demuestra por sí solo el coste del siguiente ciclo ni que todos los valores sean acumulaciones incrementales.
