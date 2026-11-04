@@ -50,6 +50,7 @@ let fightData = {}; // Damage
 let personalCombatEvents = {};
 let personalTurns = {};
 let personalTurnDamage = {};
+let personalDamageByTurn = {};
 let combatEventTime = "";
 let healData = {}; // Healing
 let armorData = {}; // Armor

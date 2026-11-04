@@ -200,6 +200,16 @@ function renderMeter() {
         const markedDamage = currentViewIndex === "live" ? (personalTurnDamage[p.name] || 0) : (fightHistory[currentViewIndex]?.personalTurnDamage?.[p.name] || 0);
         summary.textContent = turns ? `DPT entre marcas manuales: ${Math.round(markedDamage / turns).toLocaleString()} · ${turns} turno(s) marcados · puede incluir daño fuera de turno · últimos 200 eventos` : "DPT no disponible: marca el inicio de cada turno. Las acciones anteriores quedan sin turno.";
         detail.appendChild(summary);
+        if (turns) {
+          const totals = currentViewIndex === "live" ? (personalDamageByTurn[p.name] || {}) : (fightHistory[currentViewIndex]?.personalDamageByTurn?.[p.name] || {});
+          const turnsSummary = document.createElement("div");
+          const firstTurn = Math.max(1, turns - 19);
+          turnsSummary.textContent = Array.from({ length: turns - firstTurn + 1 }, (_, i) => {
+            const number = firstTurn + i;
+            return `Turno ${number}: ${typeof totals[number] === "number" ? totals[number].toLocaleString() : "sin datos"}`;
+          }).join(" · ");
+          detail.appendChild(turnsSummary);
+        }
         const log = document.createElement("div");
         log.className = "personal-combat-log";
         if (!events.length) log.textContent = "Sin acciones registradas para este combate.";

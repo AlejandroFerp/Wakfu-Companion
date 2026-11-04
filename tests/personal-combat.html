@@ -30,13 +30,18 @@ document.getElementById('app').onload = async () => {
     await app.parseFile();
     block = app.document.querySelector('.player-block[data-name="Jugador"]');
     if (!block.textContent.includes('DPT entre marcas manuales: 300') || !block.textContent.includes('Turno 1 (marcado)') || !block.textContent.includes('Evento sobre el personaje: -2 PM')) throw Error('El DPT, el turno o el efecto no son correctos');
+    block.querySelector('.personal-turn-button').click();
+    content += '12:00:03,200 - [Información (combate)] Jugador lanza el hechizo Piratería.\n12:00:03,300 - [Información (combate)] Objetivo: -200 PdV (fuego)\n';
+    await app.parseFile();
+    block = app.document.querySelector('.player-block[data-name="Jugador"]');
+    if (!block.textContent.includes('DPT entre marcas manuales: 250') || !block.textContent.includes('Turno 1: 300') || !block.textContent.includes('Turno 2: 200')) throw Error('Desglose por turno incorrecto');
     content += '12:00:04,000 - [Información (combate)] Combate terminado.\n';
     await app.parseFile();
     const history = JSON.parse(app.localStorage.getItem('wakfu_fight_history'));
-    if (history[0].personalTurnDamage.Jugador !== 300 || history[0].personalEvents.Jugador.length < 4) throw Error('No se guardó el detalle en el historial');
+    if (history[0].personalTurnDamage.Jugador !== 500 || history[0].personalEvents.Jugador.length < 4) throw Error('No se guardó el detalle en el historial');
     app.document.getElementById('btn-hist-0').click();
     const historical = app.document.querySelector('.player-block[data-name="Jugador"]');
-    if (!historical || !historical.textContent.includes('DPT entre marcas manuales: 300') || !historical.textContent.includes('Lanza Piratería')) throw Error('El detalle histórico no se muestra');
+    if (!historical || !historical.textContent.includes('DPT entre marcas manuales: 250') || !historical.textContent.includes('Turno 2: 200') || !historical.textContent.includes('Lanza Piratería')) throw Error('El detalle histórico no se muestra');
     result.textContent='PRUEBA CORRECTA';
   } catch(error) {result.textContent='PRUEBA FALLIDA: '+error.message;}
 };

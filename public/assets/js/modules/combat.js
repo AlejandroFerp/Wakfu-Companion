@@ -222,7 +222,13 @@ function updateCombatData(dataSet, player, spell, amount, element) {
 
   if (dataSet === fightData) {
     recordPersonalCombatEvent(player, { type: "damage", spell, amount });
-    if (personalTurns[player]) personalTurnDamage[player] = (personalTurnDamage[player] || 0) + amount;
+    if (personalTurns[player]) {
+      personalTurnDamage[player] = (personalTurnDamage[player] || 0) + amount;
+      const turnTotals = personalDamageByTurn[player] || (personalDamageByTurn[player] = {});
+      const turn = personalTurns[player];
+      if (!Object.hasOwn(turnTotals, turn)) turnTotals[turn] = null;
+      if (typeof turnTotals[turn] === "number") turnTotals[turn] += amount;
+    }
   }
 
   // Mark as dirty so we know we have data to save
@@ -240,6 +246,8 @@ function recordPersonalCombatEvent(player, event) {
 function markPersonalTurn(player) {
   if (currentViewIndex !== "live") return;
   personalTurns[player] = (personalTurns[player] || 0) + 1;
+  const totals = personalDamageByTurn[player] || (personalDamageByTurn[player] = {});
+  totals[personalTurns[player]] = 0;
   recordPersonalCombatEvent(player, { type: "turn", time: new Date().toLocaleTimeString("es-ES", { hour12: false }) });
   lastRenderSignature = "";
   renderMeter();
@@ -280,6 +288,7 @@ function saveFightToHistory() {
     personalEvents: JSON.parse(JSON.stringify(personalCombatEvents)),
     personalTurns: { ...personalTurns },
     personalTurnDamage: { ...personalTurnDamage },
+    personalDamageByTurn: JSON.parse(JSON.stringify(personalDamageByTurn)),
     timestamp: new Date().toLocaleTimeString(),
   };
 
@@ -316,6 +325,7 @@ function performReset(isAuto = false) {
   personalCombatEvents = {};
   personalTurns = {};
   personalTurnDamage = {};
+  personalDamageByTurn = {};
 
   // 3. Reset State
   currentCaster = "Unknown";
@@ -782,6 +792,7 @@ function saveLiveCombatState() {
     personalCombatEvents,
     personalTurns,
     personalTurnDamage,
+    personalDamageByTurn,
     playerClasses,
     manualOverrides,
     summonBindings,
@@ -804,6 +815,7 @@ function loadLiveCombatState() {
     personalCombatEvents = state.personalCombatEvents || {};
     personalTurns = state.personalTurns || {};
     personalTurnDamage = state.personalTurnDamage || {};
+    personalDamageByTurn = state.personalDamageByTurn || {};
     playerClasses = state.playerClasses || {};
     manualOverrides = state.manualOverrides || {};
     summonBindings = state.summonBindings || {};
