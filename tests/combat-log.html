@@ -19,13 +19,15 @@ document.getElementById('app').onload = async () => {
       '12:00:02,000 - [Información (combate)] Personaje: -2 PM',
       '12:00:03,000 - [Información (combate)] Personaje: Escudo (+1 niv.)',
       '12:00:03,500 - [Información (combate)] Objetivo: -30 PdV (daño por la espalda)',
+      '12:00:03,600 - [Información (combate)] Personaje: Invoca un(a) Torreta',
+      '12:00:03,700 - [Información (combate)] Objetivo: es empujado 3 casillas',
       '12:00:04,000 - [Comercio] Mensaje privado de prueba',
       ''
     ].join('\n');
     await app.parseFile();
     const list = app.document.getElementById('combat-log-list');
     const rows = [...list.querySelectorAll('.combat-log-event')];
-    if (rows.length !== 5 || rows.map(x => x.dataset.type).join(',') !== 'cast,damage,resource,state,damage') throw Error('Eventos o categorías incorrectos');
+    if (rows.length !== 7 || rows.map(x => x.dataset.type).join(',') !== 'cast,damage,resource,state,damage,summon,movement') throw Error('Eventos o categorías incorrectos');
     if (!rows[1].textContent.includes('-1.234 PdV')) throw Error('Texto original perdido');
     if (!rows[0].querySelector('[aria-label="Crítico"]')) throw Error('Falta el indicador de crítico');
     if (!rows[4].querySelector('[aria-label="Espalda"]')) throw Error('Falta el indicador de espalda');
@@ -42,10 +44,10 @@ document.getElementById('app').onload = async () => {
     filter.value = 'all'; filter.dispatchEvent(new app.Event('change'));
     content += '12:00:05,000 - [Información (combate)] Personaje lanza el hechizo Incom';
     await app.parseFile();
-    if (list.querySelectorAll('.combat-log-event').length !== 5) throw Error('Se mostró una línea incompleta');
+    if (list.querySelectorAll('.combat-log-event').length !== 7) throw Error('Se mostró una línea incompleta');
     content += 'pleto.\n';
     await app.parseFile();
-    if (list.querySelectorAll('.combat-log-event').length !== 6 || !list.textContent.includes('Incompleto.')) throw Error('Línea dividida perdida');
+    if (list.querySelectorAll('.combat-log-event').length !== 8 || !list.textContent.includes('Incompleto.')) throw Error('Línea dividida perdida');
     result.textContent = 'PRUEBA CORRECTA';
   } catch (error) { result.textContent = 'PRUEBA FALLIDA: ' + error.message; }
 };

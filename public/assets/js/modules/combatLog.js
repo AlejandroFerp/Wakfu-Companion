@@ -49,6 +49,8 @@ function classifyCombatEvent(text) {
   if (/^.+?:\s*\+\s*[\d.,]+\s*(?:PdV|PV|HP)\b/i.test(text)) return "heal";
   if (/^.+?:\s*[+-]?\s*[\d.,]+\s*(?:Armadura|Armor|Armure)\b/i.test(text)) return "armor";
   if (/^.+?:\s*[+-]?\s*[\d.,]+\s*(?:PA|PM|PW|PE|Puntos?\s+de\s+Stasis|Punto\(s\)\s+de\s+Stasis)\b/i.test(text)) return "resource";
+  if (/^.+?:\s*(?:es empujad[oa]|es atra[ií]d[oa]|se desplaza|cambia de posici[oó]n|se teletransporta)\b/i.test(text)) return "movement";
+  if (/^.+?:\s*invoca\b/i.test(text)) return "summon";
   if (/^.+?:\s*.+\((?:[+-]?\d+\s*niv\.|niv\.\s*\d+)\)/i.test(text)) return "state";
   return "other";
 }
@@ -86,7 +88,7 @@ function appendCombatLog(line) {
   message.textContent = match[2];
   const badge = document.createElement("span");
   badge.className = `combat-log-badge combat-log-${type}`;
-  badge.textContent = { cast: "Hechizo", damage: "Daño", heal: "Cura", armor: "Armadura", resource: "Recurso", state: "Estado", other: "Evento" }[type];
+  badge.textContent = { cast: "Hechizo", damage: "Daño", heal: "Cura", armor: "Armadura", resource: "Recurso", state: "Estado", movement: "Movimiento", summon: "Invocación", other: "Evento" }[type];
   row.append(time, badge);
   for (const [symbol, label] of combatEventIndicators(match[2])) {
     const indicator = document.createElement("span");
