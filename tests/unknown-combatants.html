@@ -19,6 +19,9 @@ document.getElementById('app').onload=async()=>{
     if(!d.getElementById('list-unknown').textContent.includes('Incógnita')) throw Error('El personaje sin identificar no está en su sección');
     if(d.getElementById('list-enemies').textContent.includes('Incógnita') || !d.getElementById('list-enemies').textContent.includes('Capitán Miau')) throw Error('Clasificación de enemigos incorrecta');
     if(d.getElementById('unknown-total-val').textContent!=='110' || d.getElementById('enemies-total-val').textContent!=='70') throw Error('Totales incorrectos');
+    app.modifyExpansion('enemies', 'expand');
+    if(!d.querySelector('#list-enemies .spell-list.open') || d.querySelector('#list-unknown .spell-list.open')) throw Error('Expandir enemigos incluyó a personajes sin identificar');
+    app.modifyExpansion('enemies', 'collapse');
     d.querySelector('#list-unknown .set-combat-side[data-side="ally"]').click();
     if(!d.getElementById('list-allies').textContent.includes('Incógnita') || d.getElementById('unknown-section').style.display!=='none') throw Error('La corrección manual no se aplicó');
     if(JSON.parse(app.localStorage.getItem('wakfu_overrides'))['Incógnita']!=='ally') throw Error('No se guardó la corrección manual');
@@ -28,6 +31,11 @@ document.getElementById('app').onload=async()=>{
     content += '12:00:06,000 - [Información (combate)] Nuevo lanza el hechizo Piratería.\n';
     await app.parseFile();
     if(!d.getElementById('list-allies').textContent.includes('Nuevo')) throw Error('La identificación de clase no actualizó el medidor');
+    content += '12:00:07,000 - [Información (combate)] Combate terminado.\n';
+    await app.parseFile();
+    d.getElementById('btn-hist-0').click();
+    app.modifyExpansion('enemies', 'expand');
+    if(!d.querySelector('#list-enemies .spell-list.open')) throw Error('No se expandieron los enemigos del combate guardado');
     result.textContent='PRUEBA CORRECTA';
   } catch(e){result.textContent='PRUEBA FALLIDA: '+e.message;}
 };

@@ -592,16 +592,21 @@ function collapseAll() {
 }
 
 function modifyExpansion(category, action) {
+  const snapshot = currentViewIndex === "live" ? null : fightHistory[currentViewIndex];
+  if (currentViewIndex !== "live" && !snapshot) return;
+  const sourceClasses = snapshot ? (snapshot.classes || {}) : playerClasses;
+  const sourceOverrides = snapshot ? (snapshot.overrides || {}) : manualOverrides;
   let dataSet;
-  if (activeMeterMode === "damage") dataSet = fightData;
-  else if (activeMeterMode === "healing") dataSet = healData;
-  else dataSet = armorData;
+  if (activeMeterMode === "damage") dataSet = snapshot ? snapshot.damage : fightData;
+  else if (activeMeterMode === "healing") dataSet = snapshot ? snapshot.healing : healData;
+  else dataSet = snapshot ? snapshot.armor : armorData;
+  dataSet = dataSet || {};
   const players = Object.values(dataSet);
   players.forEach((p) => {
-    const isAlly = isPlayerAlly(p);
+    const side = getCombatSide(p, sourceClasses, sourceOverrides);
     if (
-      (category === "allies" && isAlly) ||
-      (category === "enemies" && !isAlly)
+      (category === "allies" && side === "ally") ||
+      (category === "enemies" && side === "enemy")
     ) {
       if (action === "expand") expandedPlayers.add(p.name);
       else expandedPlayers.delete(p.name);
