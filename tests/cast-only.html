@@ -1,0 +1,28 @@
+<!doctype html><meta charset="utf-8"><title>Prueba de personajes sin daño</title>
+<script>localStorage.removeItem('wakfu_fight_history');localStorage.removeItem('wakfu_live_combat_state');localStorage.removeItem('wakfu_overrides');</script>
+<iframe id="app" src="../public/index.html" width="1000" height="600"></iframe><p id="result">Comprobando...</p>
+<script>
+document.getElementById('app').onload=async()=>{
+  const app=document.getElementById('app').contentWindow,result=document.getElementById('result');
+  try {
+    app.saveFileHandleToDB=async()=>{};let content='';
+    const handle={name:'wakfu_chat.log',async getFile(){return new File([content],'wakfu_chat.log');}};
+    const event=new app.Event('drop',{bubbles:true,cancelable:true});
+    Object.defineProperty(event,'dataTransfer',{value:{items:[{kind:'file',async getAsFileSystemHandle(){return handle;}}]}});
+    app.document.getElementById('drop-zone').dispatchEvent(event);await new Promise(r=>setTimeout(r,200));
+    content='12:00:00,000 - [Información (combate)] Apoyo lanza el hechizo Piratería.\n';
+    await app.parseFile();
+    const d=app.document;
+    let row=d.querySelector('.player-block[data-name="Apoyo"]');
+    if(!row || !row.textContent.includes('0')) throw Error('El personaje sin daño no aparece');
+    row.querySelector('.player-row').click();
+    row=d.querySelector('.player-block[data-name="Apoyo"]');
+    if(!row.textContent.includes('Lanza Piratería')) throw Error('No se muestra su registro personal');
+    content += '12:00:01,000 - [Información (combate)] Luchador lanza el hechizo Piratería.\n12:00:02,000 - [Información (combate)] Objetivo: -50 PdV (agua)\n12:00:03,000 - [Información (combate)] Combate terminado.\n';
+    await app.parseFile();d.getElementById('btn-hist-0').click();
+    row=d.querySelector('.player-block[data-name="Apoyo"]');
+    if(!row || !row.textContent.includes('Lanza Piratería')) throw Error('No se guardó el personaje sin daño en el historial');
+    result.textContent='PRUEBA CORRECTA';
+  }catch(error){result.textContent='PRUEBA FALLIDA: '+error.message;}
+};
+</script>

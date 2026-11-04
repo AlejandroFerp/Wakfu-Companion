@@ -2,6 +2,17 @@
 
 let lastRenderSignature = "";
 
+function getMeterParticipants(dataSet, eventsByPlayer) {
+  const players = Object.values(dataSet || {});
+  const known = new Set(players.map((player) => player.name));
+  for (const [name, events] of Object.entries(eventsByPlayer || {})) {
+    if (!known.has(name) && events.some((event) => event.type === "cast")) {
+      players.push({ name, total: 0, spells: {} });
+    }
+  }
+  return players;
+}
+
 function renderMeter() {
   // 1. DETERMINE DATA SOURCE
   let sourceFight, sourceClasses, sourceOverrides;
@@ -37,7 +48,8 @@ function renderMeter() {
 
   if (!dataSet) return;
 
-  const players = Object.values(dataSet);
+  const personalEvents = currentViewIndex === "live" ? personalCombatEvents : fightHistory[currentViewIndex]?.personalEvents;
+  const players = getMeterParticipants(dataSet, personalEvents);
 
   // --- MEMORY OPTIMIZATION: DIRTY CHECK ---
   const totalGlobal = players.reduce((acc, p) => acc + p.total, 0);
@@ -119,7 +131,7 @@ function renderMeter() {
 
     for (let i = 0; i < list.length; i++) {
       const p = list[i];
-      const barPercent = (p.total / maxVal) * 100;
+      const barPercent = maxVal > 0 ? (p.total / maxVal) * 100 : 0;
       const totalPercent =
         categoryTotal > 0
           ? ((p.total / categoryTotal) * 100).toFixed(1) + "%"
@@ -601,7 +613,7 @@ function modifyExpansion(category, action) {
   else if (activeMeterMode === "healing") dataSet = snapshot ? snapshot.healing : healData;
   else dataSet = snapshot ? snapshot.armor : armorData;
   dataSet = dataSet || {};
-  const players = Object.values(dataSet);
+  const players = getMeterParticipants(dataSet, snapshot ? snapshot.personalEvents : personalCombatEvents);
   players.forEach((p) => {
     const side = getCombatSide(p, sourceClasses, sourceOverrides);
     if (
