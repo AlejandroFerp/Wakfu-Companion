@@ -1,0 +1,34 @@
+<!doctype html><meta charset="utf-8"><title>Prueba de clasificación de combatientes</title>
+<script>localStorage.removeItem('wakfu_fight_history');localStorage.removeItem('wakfu_live_combat_state');localStorage.removeItem('wakfu_overrides');</script>
+<iframe id="app" src="../public/index.html" width="1000" height="600"></iframe><p id="result">Comprobando...</p>
+<script>
+document.getElementById('app').onload=async()=>{
+  const app=document.getElementById('app').contentWindow,result=document.getElementById('result');
+  try {
+    app.saveFileHandleToDB=async()=>{};let content='';
+    const handle={name:'wakfu_chat.log',async getFile(){return new File([content],'wakfu_chat.log');}};
+    const event=new app.Event('drop',{bubbles:true,cancelable:true});
+    Object.defineProperty(event,'dataTransfer',{value:{items:[{kind:'file',async getAsFileSystemHandle(){return handle;}}]}});
+    app.document.getElementById('drop-zone').dispatchEvent(event);await new Promise(r=>setTimeout(r,200));
+    content=['12:00:00,000 - [Información (combate)] Incógnita lanza el hechizo Prueba desconocida.',
+      '12:00:01,000 - [Información (combate)] Objetivo: -110 PdV (agua)',
+      '12:00:02,000 - [Información (combate)] Capitán Miau lanza el hechizo Ataque desconocido.',
+      '12:00:03,000 - [Información (combate)] Objetivo: -70 PdV (agua)',''].join('\n');
+    await app.parseFile();
+    const d=app.document;
+    if(!d.getElementById('list-unknown').textContent.includes('Incógnita')) throw Error('El personaje sin identificar no está en su sección');
+    if(d.getElementById('list-enemies').textContent.includes('Incógnita') || !d.getElementById('list-enemies').textContent.includes('Capitán Miau')) throw Error('Clasificación de enemigos incorrecta');
+    if(d.getElementById('unknown-total-val').textContent!=='110' || d.getElementById('enemies-total-val').textContent!=='70') throw Error('Totales incorrectos');
+    d.querySelector('#list-unknown .set-combat-side[data-side="ally"]').click();
+    if(!d.getElementById('list-allies').textContent.includes('Incógnita') || d.getElementById('unknown-section').style.display!=='none') throw Error('La corrección manual no se aplicó');
+    if(JSON.parse(app.localStorage.getItem('wakfu_overrides'))['Incógnita']!=='ally') throw Error('No se guardó la corrección manual');
+    content += '12:00:04,000 - [Información (combate)] Nuevo lanza el hechizo Prueba desconocida.\n12:00:05,000 - [Información (combate)] Objetivo: -50 PdV (agua)\n';
+    await app.parseFile();
+    if(!d.getElementById('list-unknown').textContent.includes('Nuevo')) throw Error('No se mostró el segundo desconocido');
+    content += '12:00:06,000 - [Información (combate)] Nuevo lanza el hechizo Piratería.\n';
+    await app.parseFile();
+    if(!d.getElementById('list-allies').textContent.includes('Nuevo')) throw Error('La identificación de clase no actualizó el medidor');
+    result.textContent='PRUEBA CORRECTA';
+  } catch(e){result.textContent='PRUEBA FALLIDA: '+e.message;}
+};
+</script>

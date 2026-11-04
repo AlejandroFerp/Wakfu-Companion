@@ -56,16 +56,21 @@ function renderMeter() {
 
   const alliesContainer = getUI("list-allies");
   const enemiesContainer = getUI("list-enemies");
+  const unknownContainer = getUI("list-unknown");
+  const unknownSection = getUI("unknown-section");
+  const unknownTotalEl = getUI("unknown-total-val");
   const alliesTotalEl = getUI("allies-total-val");
   const enemiesTotalEl = getUI("enemies-total-val");
 
-  if (!alliesContainer || !enemiesContainer) return;
+  if (!alliesContainer || !enemiesContainer || !unknownContainer || !unknownSection) return;
 
   if (players.length === 0) {
     alliesContainer.innerHTML = `<div class="empty-state">${
       currentViewIndex === "live" ? "Esperando combate..." : "No hay datos registrados"
     }</div>`;
     enemiesContainer.innerHTML = "";
+    unknownContainer.textContent = "";
+    unknownSection.style.display = "none";
     if (alliesTotalEl) alliesTotalEl.textContent = "0";
     if (enemiesTotalEl) enemiesTotalEl.textContent = "0";
     return;
@@ -73,26 +78,34 @@ function renderMeter() {
 
   const allies = [];
   const enemies = [];
+  const unknown = [];
 
   players.forEach((p) => {
-    if (isPlayerAlly(p, sourceClasses, sourceOverrides)) {
+    const side = getCombatSide(p, sourceClasses, sourceOverrides);
+    if (side === "ally") {
       allies.push(p);
-    } else {
+    } else if (side === "enemy") {
       enemies.push(p);
+    } else {
+      unknown.push(p);
     }
   });
 
   const totalAllyVal = allies.reduce((acc, p) => acc + p.total, 0);
   const totalEnemyVal = enemies.reduce((acc, p) => acc + p.total, 0);
+  const totalUnknownVal = unknown.reduce((acc, p) => acc + p.total, 0);
 
   if (alliesTotalEl) alliesTotalEl.textContent = totalAllyVal.toLocaleString();
   if (enemiesTotalEl)
     enemiesTotalEl.textContent = totalEnemyVal.toLocaleString();
+  if (unknownTotalEl) unknownTotalEl.textContent = totalUnknownVal.toLocaleString();
+  unknownSection.style.display = unknown.length ? "" : "none";
 
   allies.sort((a, b) => b.total - a.total);
   enemies.sort((a, b) => b.total - a.total);
+  unknown.sort((a, b) => b.total - a.total);
 
-  const renderList = (list, container, categoryTotal) => {
+  const renderList = (list, container, categoryTotal, isUnknown = false) => {
     container.textContent = "";
 
     if (list.length === 0) {
@@ -179,6 +192,21 @@ function renderMeter() {
         </div>
       `;
 
+      if (isUnknown && currentViewIndex === "live") {
+        const buttons = document.createElement("div");
+        buttons.className = "unknown-side-buttons";
+        for (const [side, label] of [["ally", "Es aliado"], ["enemy", "Es enemigo"]]) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "set-combat-side";
+          button.dataset.side = side;
+          button.dataset.player = p.name;
+          button.textContent = label;
+          buttons.appendChild(button);
+        }
+        rowBlock.appendChild(buttons);
+      }
+
       if (isExpanded) {
         const spellContainer = document.createElement("div");
         spellContainer.className = "spell-list open";
@@ -263,6 +291,7 @@ function renderMeter() {
 
   renderList(allies, alliesContainer, totalAllyVal);
   renderList(enemies, enemiesContainer, totalEnemyVal);
+  renderList(unknown, unknownContainer, totalUnknownVal, true);
 }
 
 function setupDragAndDrop() {
@@ -280,6 +309,14 @@ function setupDragAndDrop() {
 
   // 1. CLICK HANDLING (Expand/Collapse + Icon Toggle)
   newContainer.addEventListener("click", (e) => {
+    const setSide = e.target.closest(".set-combat-side");
+    if (setSide) {
+      manualOverrides[setSide.dataset.player] = setSide.dataset.side;
+      try { localStorage.setItem("wakfu_overrides", JSON.stringify(manualOverrides)); } catch (_) {}
+      lastRenderSignature = "";
+      renderMeter();
+      return;
+    }
     const markTurn = e.target.closest(".personal-turn-button");
     if (markTurn) {
       markPersonalTurn(markTurn.dataset.player);
@@ -750,4 +787,3 @@ function renderTracker() {
     }
   });
 }
-

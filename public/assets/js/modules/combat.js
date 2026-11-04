@@ -264,6 +264,7 @@ function detectClass(playerName, spellName) {
     const detected = spellToClassMap[spellName];
     if (playerClasses[playerName] !== detected) {
       playerClasses[playerName] = detected;
+      lastRenderSignature = "";
       if (typeof syncHypermageSelection === "function") syncHypermageSelection();
       // Clear icon cache so it re-renders with the new class icon
       delete playerIconCache[playerName];
@@ -543,38 +544,41 @@ function routeCombatData(unit, armorUnits, sign, caster, spell, amount, element)
 // An unrecognised target is not evidence that it belongs to the enemy team.
 function isKnownCombatEnemy(name) {
   if (!name) return false;
-  if (manualOverrides[name]) return manualOverrides[name] === "enemy";
-  return Boolean(monsterLookup[name.toLowerCase().trim()]);
+  return getCombatSide({ name }) === "enemy";
 }
 
 // Helper: Determine if a player object belongs to Allies or Enemies
-function isPlayerAlly(p, contextClasses = null, contextOverrides = null) {
+function getCombatSide(p, contextClasses = null, contextOverrides = null) {
   const classesMap = contextClasses || playerClasses;
   const overridesMap = contextOverrides || manualOverrides;
   const name = p.name;
   const lowerName = name.toLowerCase().trim();
 
   // 1. Manual Overrides (Highest Priority - from Drag & Drop)
-  if (overridesMap[name]) return overridesMap[name] === "ally";
+  if (overridesMap[name] === "ally" || overridesMap[name] === "enemy") return overridesMap[name];
 
   // 2. Known Monsters & Bosses (Strict Enemy)
-  if (monsterLookup[lowerName]) return false;
+  if (monsterLookup[lowerName]) return "enemy";
+  if (["saco de papas", "punchy"].includes(lowerName)) return "enemy";
 
   // 3. Enemy Families (Generic Logic)
   if (typeof wakfuEnemies !== "undefined") {
-    const isEnemy = wakfuEnemies.some((fam) => lowerName.includes(fam.toLowerCase()));
-    if (isEnemy || name.includes("Punchy") || name.includes("Papas")) return false;
+    const isEnemy = wakfuEnemies.some((fam) => lowerName === fam.toLowerCase());
+    if (isEnemy) return "enemy";
   }
 
   // 4. Detected Player Classes (Ally)
   // Only checks this AFTER confirming it's not a known monster
-  if (classesMap[name]) return true;
+  if (classesMap[name]) return "ally";
 
   // 5. Known Summons (Ally)
-  if (typeof allySummons !== "undefined" && allySummons.includes(name)) return true;
+  if (typeof allySummons !== "undefined" && allySummons.includes(name)) return "ally";
 
-  // 6. Default Fallback -> Enemy
-  return false;
+  return "unknown";
+}
+
+function isPlayerAlly(p, contextClasses = null, contextOverrides = null) {
+  return getCombatSide(p, contextClasses, contextOverrides) === "ally";
 }
 
 document.getElementById("resetBtn").addEventListener("click", performReset);

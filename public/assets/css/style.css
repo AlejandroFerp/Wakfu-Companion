@@ -514,6 +514,9 @@ button.reset-btn:hover {
 .header-enemies {
   background-color: var(--enemy-header-bg);
 }
+.header-unknown { background: #4b4431; }
+.unknown-side-buttons { display: flex; gap: 6px; padding: 4px 8px; }
+.unknown-side-buttons button { cursor: pointer; font-size: .75rem; }
 .header-title-group {
   display: flex;
   align-items: center;
