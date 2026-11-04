@@ -9,9 +9,13 @@ from pathlib import Path
 
 def exportar(archivo, destino):
     with zipfile.ZipFile(archivo) as jar:
-        texto = jar.read('texts_es.properties').decode('latin-1')
+        lineas = jar.read('texts_es.properties').splitlines()
     nombres, descripciones = {}, {}
-    for linea in texto.splitlines():
+    for linea_bytes in lineas:
+        try:
+            linea = linea_bytes.decode('utf-8')
+        except UnicodeDecodeError:
+            linea = linea_bytes.decode('latin-1')
         m = re.match(r'^content\.(3|4)\.(\d+)=(.*)$', linea)
         if m:
             valor = m.group(3).replace(r'\n', '\n').replace(r'\:', ':').strip()
