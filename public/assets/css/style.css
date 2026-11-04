@@ -1039,6 +1039,7 @@ button.reset-btn:hover {
 .combat-log-heal { color: #8ae1a7; }
 .combat-log-armor { color: #e7c46b; }
 .combat-log-resource { color: #c4a0ff; }
+.combat-log-indicator { flex: none; color: #ffd66b; font-weight: bold; }
 
 #chat-list {
   overflow-y: auto;

@@ -15,6 +15,13 @@ function classifyCombatEvent(text) {
   return "other";
 }
 
+function combatEventIndicators(text) {
+  const indicators = [];
+  if (/\bcr[ií]tico\b/i.test(text)) indicators.push(["✦", "Crítico"]);
+  if (/\b(?:de|por la|por) espalda\b/i.test(text)) indicators.push(["↶", "Espalda"]);
+  return indicators;
+}
+
 function updateCombatLogFilters() {
   const type = combatLogType.value;
   const query = combatLogSearch.value.toLocaleLowerCase("es").trim();
@@ -40,7 +47,16 @@ function appendCombatLog(line) {
   const badge = document.createElement("span");
   badge.className = `combat-log-badge combat-log-${type}`;
   badge.textContent = { cast: "Hechizo", damage: "Daño", heal: "Cura", armor: "Armadura", resource: "Recurso", state: "Estado", other: "Evento" }[type];
-  row.append(time, badge, message);
+  row.append(time, badge);
+  for (const [symbol, label] of combatEventIndicators(match[2])) {
+    const indicator = document.createElement("span");
+    indicator.className = "combat-log-indicator";
+    indicator.textContent = symbol;
+    indicator.title = label;
+    indicator.setAttribute("aria-label", label);
+    row.appendChild(indicator);
+  }
+  row.appendChild(message);
   combatLogList.appendChild(row);
   const selectedType = combatLogType.value;
   const query = combatLogSearch.value.toLocaleLowerCase("es").trim();
