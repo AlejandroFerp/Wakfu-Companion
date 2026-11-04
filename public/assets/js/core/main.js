@@ -185,6 +185,7 @@ window.startSessionTimer = startSessionTimer;
 
 async function startTracking(handle) {
   await saveFileHandleToDB(handle);
+  resetLogReader();
 
   document.getElementById("setup-panel").style.display = "none";
   activeFilename.textContent = handle.name;
@@ -227,3 +228,4 @@ function startMaintenanceRoutine() {
     }
   }, 300000); // Every 5 minutes
 }
+

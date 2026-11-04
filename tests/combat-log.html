@@ -29,6 +29,13 @@ document.getElementById('app').onload = async () => {
     const filter = app.document.getElementById('combat-log-type');
     filter.value = 'damage'; filter.dispatchEvent(new app.Event('change'));
     if (rows.filter(x => !x.hidden).length !== 1 || rows[1].hidden) throw Error('Filtro incorrecto');
+    filter.value = 'all'; filter.dispatchEvent(new app.Event('change'));
+    content += '12:00:05,000 - [Información (combate)] Personaje lanza el hechizo Incom';
+    await app.parseFile();
+    if (list.querySelectorAll('.combat-log-event').length !== 4) throw Error('Se mostró una línea incompleta');
+    content += 'pleto.\n';
+    await app.parseFile();
+    if (list.querySelectorAll('.combat-log-event').length !== 5 || !list.textContent.includes('Incompleto.')) throw Error('Línea dividida perdida');
     result.textContent = 'PRUEBA CORRECTA';
   } catch (error) { result.textContent = 'PRUEBA FALLIDA: ' + error.message; }
 };

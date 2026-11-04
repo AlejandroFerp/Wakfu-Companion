@@ -594,6 +594,13 @@ function viewHistory(index) {
 }
 
 let permissionStrikeCount = 0; // Counter for transient errors
+let pendingLogText = "";
+let logDecoder = new TextDecoder("utf-8");
+
+function resetLogReader() {
+  pendingLogText = "";
+  logDecoder = new TextDecoder("utf-8");
+}
 
 const LOOT_KEYWORDS = ["picked up", "ramassé", "obtenu", "recogido", "obtenido", "apanhou", "obteve"];
 
@@ -616,12 +623,18 @@ async function parseFile() {
     // Success: Reset error counter
     permissionStrikeCount = 0;
 
+    if (file.size < fileOffset) {
+      fileOffset = 0;
+      resetLogReader();
+    }
+
     if (file.size > fileOffset) {
       const blob = file.slice(fileOffset, file.size);
-      const text = await blob.text();
+      const text = pendingLogText + logDecoder.decode(await blob.arrayBuffer(), { stream: true });
 
       // Optimization: Manual split to avoid memory retention issues
       const lines = text.split(/\r?\n/);
+      pendingLogText = lines.pop();
 
       for (let i = 0; i < lines.length; i++) {
         // Detach string from memory blob
