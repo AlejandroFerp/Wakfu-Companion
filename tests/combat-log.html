@@ -6,10 +6,6 @@ document.getElementById('app').onload = async () => {
   const app = document.getElementById('app').contentWindow;
   const result = document.getElementById('result');
   try {
-    const hyper = app.document.getElementById('hyper-character');
-    hyper.value = 'Bucrota';
-    hyper.dispatchEvent(new app.Event('input'));
-    app.document.getElementById('hyper-start-turn').click();
     app.saveFileHandleToDB = async () => {};
     let content = '';
     const handle = { name: 'wakfu_chat.log', async getFile() { return new File([content], 'wakfu_chat.log'); } };
@@ -17,6 +13,12 @@ document.getElementById('app').onload = async () => {
     Object.defineProperty(drop, 'dataTransfer', { value: { items: [{ kind: 'file', async getAsFileSystemHandle() { return handle; } }] } });
     app.document.getElementById('drop-zone').dispatchEvent(drop);
     await new Promise(resolve => setTimeout(resolve, 200));
+    const hyper = app.document.getElementById('hyper-character');
+    app.detectClass('HipermagoEjemplo', 'Orbes Relucientes');
+    if (hyper.value !== 'HipermagoEjemplo' || !app.document.getElementById('hyper-choice-label').hidden) throw Error('No se detectó el hipermago automáticamente');
+    app.detectClass('Segundo', 'Orbes Relucientes');
+    if (hyper.value !== 'HipermagoEjemplo' || app.document.getElementById('hyper-choice-label').hidden) throw Error('Selección de varios hipermagos incorrecta');
+    app.document.getElementById('hyper-start-turn').click();
     content = [
       '12:00:00,000 - [Información (combate)] Personaje lanza el hechizo Piratería. (Crítico)',
       '12:00:01,000 - [Información (combate)] Objetivo: -1.234 PdV (fuego)',
@@ -25,10 +27,10 @@ document.getElementById('app').onload = async () => {
       '12:00:03,500 - [Información (combate)] Objetivo: -30 PdV (daño por la espalda)',
       '12:00:03,600 - [Información (combate)] Personaje: Invoca un(a) Torreta',
       '12:00:03,700 - [Información (combate)] Objetivo: es empujado 3 casillas',
-      '12:00:03,800 - [Información (combate)] Bucrota: Abundancia (+50 niv.) (Plenitud)',
-      '12:00:03,900 - [Información (combate)] Bucrota: Abundancia (+60 niv.) (Runa consumida)',
-      '12:00:03,950 - [Información (combate)] Bucrota: 25 BC (Runa generada)',
-      '12:00:03,960 - [Información (combate)] Bucrota lanza el hechizo Ciclo Elemental.',
+      '12:00:03,800 - [Información (combate)] HipermagoEjemplo: Abundancia (+50 niv.) (Plenitud)',
+      '12:00:03,900 - [Información (combate)] HipermagoEjemplo: Abundancia (+60 niv.) (Runa consumida)',
+      '12:00:03,950 - [Información (combate)] HipermagoEjemplo: 25 BC (Runa generada)',
+      '12:00:03,960 - [Información (combate)] HipermagoEjemplo lanza el hechizo Ciclo Elemental.',
       '12:00:03,970 - [Información (combate)] Objetivo: Luminiscencia (Niv. 1) (Runas consumidas)',
       '12:00:04,000 - [Comercio] Mensaje privado de prueba',
       ''

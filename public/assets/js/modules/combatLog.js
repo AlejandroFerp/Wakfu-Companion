@@ -8,13 +8,15 @@ const combatSpellStatus = document.getElementById("combat-spell-status");
 const MAX_COMBAT_LOG_EVENTS = 1000;
 const hyperCharacter = document.getElementById("hyper-character");
 const hyperPanel = document.getElementById("hyper-observations");
+const hyperChoiceLabel = document.getElementById("hyper-choice-label");
+const hyperDetected = document.getElementById("hyper-detected");
 const hyperStartTurn = document.getElementById("hyper-start-turn");
 let hyperObserved = createHypermageObservations();
 
 function renderHyperObservations() {
   if (!hyperPanel) return;
   if (!hyperCharacter.value.trim()) {
-    hyperPanel.textContent = "Escribe el nombre de tu hipermago para seguir los eventos.";
+    hyperPanel.textContent = "Esperando a identificar un hipermago por sus hechizos.";
     return;
   }
   const value = v => v === null ? "sin observar" : String(v);
@@ -31,10 +33,31 @@ if (hyperStartTurn) hyperStartTurn.addEventListener("click", () => {
   hyperObserved = startHypermageTurn(hyperObserved);
   renderHyperObservations();
 });
-if (hyperCharacter) hyperCharacter.addEventListener("input", () => {
+if (hyperCharacter) hyperCharacter.addEventListener("change", () => {
   hyperObserved = createHypermageObservations();
   renderHyperObservations();
 });
+function syncHypermageSelection() {
+  if (!hyperCharacter || typeof playerClasses === "undefined") return;
+  const names = Object.keys(playerClasses).filter(name => playerClasses[name] === "huppermage").sort();
+  const previous = hyperCharacter.value;
+  const signature = JSON.stringify(names);
+  if (hyperCharacter.dataset.candidates !== signature) {
+    hyperCharacter.replaceChildren();
+    for (const name of names) {
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      hyperCharacter.appendChild(option);
+    }
+    hyperCharacter.dataset.candidates = signature;
+    if (names.includes(previous)) hyperCharacter.value = previous;
+    if (hyperCharacter.value !== previous) hyperObserved = createHypermageObservations();
+  }
+  hyperChoiceLabel.hidden = names.length < 2;
+  hyperDetected.textContent = names.length === 0 ? "Buscando hipermago..." : names.length === 1 ? `Hipermago detectado: ${names[0]}` : "Selecciona el hipermago que quieres seguir.";
+  renderHyperObservations();
+}
 let combatSpellDescriptions = {};
 try { combatSpellDescriptions = JSON.parse(localStorage.getItem("wakfu_local_spell_descriptions") || "{}"); } catch (_) {}
 
@@ -102,6 +125,7 @@ function updateCombatLogFilters() {
 function appendCombatLog(line) {
   const match = line.match(/^(\d{2}:\d{2}:\d{2}),\d+\s+-\s+\[(?:Información \(combate\)|Information \(combat\)|Fight Log|Registro de lutas)\]\s*(.*)$/i);
   if (!match || !combatLogList) return;
+  syncHypermageSelection();
   if (hyperCharacter && hyperCharacter.value.trim()) {
     hyperObserved = observeHypermageLine(hyperObserved, hyperCharacter.value.trim(), line);
     renderHyperObservations();

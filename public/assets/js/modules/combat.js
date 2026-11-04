@@ -230,6 +230,7 @@ function detectClass(playerName, spellName) {
     const detected = spellToClassMap[spellName];
     if (playerClasses[playerName] !== detected) {
       playerClasses[playerName] = detected;
+      if (typeof syncHypermageSelection === "function") syncHypermageSelection();
       // Clear icon cache so it re-renders with the new class icon
       delete playerIconCache[playerName];
     }

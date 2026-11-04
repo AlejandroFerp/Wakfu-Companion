@@ -204,10 +204,11 @@
             <span id="combat-spell-status">Opcional: importa las descripciones de tu juego.</span>
           </div>
           <div class="combat-log-reference">
-            <label>Hipermago <input id="hyper-character" type="text" placeholder="Nombre del personaje" autocomplete="off" /></label>
+            <label id="hyper-choice-label" hidden>Hipermago <select id="hyper-character"></select></label>
+            <span id="hyper-detected">Buscando hipermago...</span>
             <button type="button" id="hyper-start-turn">Empieza mi turno</button>
             <button type="button" class="pip-btn" onclick="togglePiP('hyper-observations', 'Hipermago')" aria-label="Abrir indicadores del hipermago en ventana flotante">⧉</button>
-            <div id="hyper-observations" aria-live="polite">Escribe el nombre de tu hipermago para seguir los eventos.</div>
+            <div id="hyper-observations" aria-live="polite">Esperando a identificar un hipermago por sus hechizos.</div>
           </div>
           <div id="combat-log-list" role="log" aria-label="Registro de combate" aria-live="off">
             <div class="empty-state">Esperando eventos de combate...</div>
@@ -811,15 +812,15 @@
     <script src="assets/js/modules/filesystem.js"></script>
     <script src="assets/js/modules/chat.js"></script>
     <script src="assets/js/modules/hypermageRules.js?v=2"></script>
-    <script src="assets/js/modules/combatLog.js?v=5"></script>
-    <script src="assets/js/modules/combat.js?v=2"></script>
+    <script src="assets/js/modules/combatLog.js?v=6"></script>
+    <script src="assets/js/modules/combat.js?v=3"></script>
     <script src="assets/js/modules/tracker.js"></script>
     <script src="assets/js/modules/forecast.js"></script>
     <script src="assets/js/modules/ui.js"></script>
 
     <!-- Core -->
     <script src="assets/js/core/professions.js"></script>
-    <script src="assets/js/core/main.js"></script>
+    <script src="assets/js/core/main.js?v=1"></script>
 
     <!-- BUY ME A COFFEE WIDGET -->
     <script

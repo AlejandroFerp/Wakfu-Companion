@@ -44,6 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (typeof loadLiveCombatState === "function") {
     loadLiveCombatState();
   }
+  if (typeof syncHypermageSelection === "function") syncHypermageSelection();
 
   // 4. UI Rendering
   if (typeof renderMeter === "function") renderMeter();
