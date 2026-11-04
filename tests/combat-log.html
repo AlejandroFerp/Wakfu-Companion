@@ -29,6 +29,13 @@ document.getElementById('app').onload = async () => {
     if (!rows[1].textContent.includes('-1.234 PdV')) throw Error('Texto original perdido');
     if (!rows[0].querySelector('[aria-label="Crítico"]')) throw Error('Falta el indicador de crítico');
     if (!rows[4].querySelector('[aria-label="Espalda"]')) throw Error('Falta el indicador de espalda');
+    const uploader = app.document.getElementById('combat-spell-import');
+    const transfer = new app.DataTransfer();
+    transfer.items.add(new app.File([JSON.stringify({version: 1, hechizos: {'Prueba': 'Descripción de prueba'}})], 'hechizos.json', {type: 'application/json'}));
+    uploader.files = transfer.files;
+    uploader.dispatchEvent(new app.Event('change'));
+    await new Promise(resolve => setTimeout(resolve, 100));
+    if (rows[0].title !== 'Descripción de prueba') throw Error('Descripción de hechizo no cargada');
     const filter = app.document.getElementById('combat-log-type');
     filter.value = 'damage'; filter.dispatchEvent(new app.Event('change'));
     if (rows.filter(x => !x.hidden).length !== 2 || rows[1].hidden || rows[4].hidden) throw Error('Filtro incorrecto');

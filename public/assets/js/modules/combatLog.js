@@ -3,7 +3,45 @@ const combatLogList = document.getElementById("combat-log-list");
 const combatLogClear = document.getElementById("combat-log-clear");
 const combatLogType = document.getElementById("combat-log-type");
 const combatLogSearch = document.getElementById("combat-log-search");
+const combatSpellImport = document.getElementById("combat-spell-import");
+const combatSpellStatus = document.getElementById("combat-spell-status");
 const MAX_COMBAT_LOG_EVENTS = 1000;
+let combatSpellDescriptions = {};
+try { combatSpellDescriptions = JSON.parse(localStorage.getItem("wakfu_local_spell_descriptions") || "{}"); } catch (_) {}
+
+function describeCombatSpell(row, text) {
+  const cast = text.match(/^.*? lanza (?:el hechizo|el sortilegio) (.*?)(?:\.(?=$|\s\()|(?=\s\()|$)/i);
+  if (!cast) return;
+  const description = combatSpellDescriptions[cast[1].trim()];
+  if (typeof description === "string" && description) {
+    row.title = description;
+    row.classList.add("combat-log-has-description");
+  }
+}
+
+function updateSpellStatus() {
+  const count = Object.keys(combatSpellDescriptions).length;
+  combatSpellStatus.textContent = count ? `${count} descripciones locales cargadas. Pasa el ratón por un hechizo.` : "Opcional: importa las descripciones de tu juego.";
+}
+
+if (combatSpellImport) combatSpellImport.addEventListener("change", async () => {
+  const file = combatSpellImport.files[0];
+  if (!file) return;
+  try {
+    if (file.size > 5_000_000) throw new Error("El archivo es demasiado grande.");
+    const data = JSON.parse(await file.text());
+    if (data.version !== 1 || !data.hechizos || typeof data.hechizos !== "object" || Array.isArray(data.hechizos)) throw new Error("Formato de archivo incorrecto.");
+    const clean = Object.create(null);
+    for (const [name, description] of Object.entries(data.hechizos)) {
+      if (typeof description === "string" && name.length <= 300 && description.length <= 10000) clean[name] = description;
+    }
+    localStorage.setItem("wakfu_local_spell_descriptions", JSON.stringify(clean));
+    combatSpellDescriptions = clean;
+    for (const row of combatLogList.querySelectorAll('.combat-log-event[data-type="cast"]')) describeCombatSpell(row, row.dataset.message);
+    updateSpellStatus();
+  } catch (err) { combatSpellStatus.textContent = `No se pudieron cargar las descripciones: ${err.message}`; }
+});
+if (combatSpellStatus) updateSpellStatus();
 
 function classifyCombatEvent(text) {
   if (/\blanza (?:el hechizo|el sortilegio)\b/i.test(text)) return "cast";
@@ -40,6 +78,8 @@ function appendCombatLog(line) {
   row.className = "combat-log-event";
   const type = classifyCombatEvent(match[2]);
   row.dataset.type = type;
+  row.dataset.message = match[2];
+  if (type === "cast") describeCombatSpell(row, match[2]);
   const time = document.createElement("time");
   time.textContent = match[1];
   const message = document.createElement("span");

@@ -1,3 +1,6 @@
 Stable & Others/
 Screenshots/
 .vscode/
+*.local.json
+__pycache__/
+
