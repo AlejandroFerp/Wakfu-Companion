@@ -63,7 +63,7 @@ function renderMeter() {
 
   if (players.length === 0) {
     alliesContainer.innerHTML = `<div class="empty-state">${
-      currentViewIndex === "live" ? "Waiting for combat..." : "No data recorded"
+      currentViewIndex === "live" ? "Esperando combate..." : "No hay datos registrados"
     }</div>`;
     enemiesContainer.innerHTML = "";
     if (alliesTotalEl) alliesTotalEl.textContent = "0";
@@ -97,7 +97,7 @@ function renderMeter() {
 
     if (list.length === 0) {
       container.innerHTML =
-        '<div style="padding:10px;color:#555;font-style:italic;text-align:center;">None</div>';
+        '<div style="padding:10px;color:#555;font-style:italic;text-align:center;">Ninguno</div>';
       return;
     }
 
@@ -437,21 +437,21 @@ function toggleSidebarSection(id) {
 function updateWatchdogUI() {
   if (!autoResetText || !autoResetBtn) return;
   if (!isAutoResetOn) {
-    autoResetText.textContent = "Auto Reset: OFF";
+    autoResetText.textContent = "Reinicio automático: NO";
     autoResetBtn.style.borderColor = "#444";
     autoResetText.style.color = "#aaa";
     return;
   }
   if (awaitingNewFight) {
-    autoResetText.textContent = "READY (Wait next fight)";
+    autoResetText.textContent = "Listo para el próximo combate";
     autoResetText.style.color = "#00e1ff";
     autoResetBtn.style.borderColor = "#00e1ff";
   } else if (Object.keys(fightData).length > 0) {
-    autoResetText.textContent = "Next Battle Clears Meter";
+    autoResetText.textContent = "El próximo combate reinicia el medidor";
     autoResetText.style.color = "#fff";
     autoResetBtn.style.borderColor = "var(--btn-active-green)";
   } else {
-    autoResetText.textContent = "Auto Reset: ON";
+    autoResetText.textContent = "Reinicio automático: SÍ";
     autoResetText.style.color = "#fff";
     autoResetBtn.style.borderColor = "var(--btn-active-green)";
   }
@@ -703,3 +703,4 @@ function renderTracker() {
     }
   });
 }
+

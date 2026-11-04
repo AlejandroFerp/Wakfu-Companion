@@ -567,10 +567,10 @@ function updateHistoryButtons() {
     if (btn) {
       if (fightHistory[i]) {
         btn.classList.remove("disabled");
-        btn.title = `Fight ended at ${fightHistory[i].timestamp}`;
+        btn.title = `Combate terminado a las ${fightHistory[i].timestamp}`;
       } else {
         btn.classList.add("disabled");
-        btn.title = "Empty";
+        btn.title = "Vacío";
       }
 
       // Highlight active view
