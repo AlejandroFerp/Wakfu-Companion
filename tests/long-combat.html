@@ -1,0 +1,24 @@
+<!doctype html><meta charset="utf-8"><title>Prueba de combate largo</title>
+<script>localStorage.removeItem('wakfu_fight_history');localStorage.removeItem('wakfu_live_combat_state');localStorage.removeItem('wakfu_overrides');</script>
+<iframe id="app" src="../public/index.html" width="1000" height="600"></iframe><p id="result">Comprobando...</p>
+<script>
+document.getElementById('app').onload=async()=>{
+  const app=document.getElementById('app').contentWindow,result=document.getElementById('result');
+  try{
+    app.saveFileHandleToDB=async()=>{};let content='';
+    const handle={name:'wakfu_chat.log',async getFile(){return new File([content],'wakfu_chat.log');}};
+    const drop=new app.Event('drop',{bubbles:true,cancelable:true});
+    Object.defineProperty(drop,'dataTransfer',{value:{items:[{kind:'file',async getAsFileSystemHandle(){return handle;}}]}});
+    app.document.getElementById('drop-zone').dispatchEvent(drop);await new Promise(r=>setTimeout(r,200));
+    content='12:00:00,000 - [Información (combate)] Jugador lanza el hechizo Piratería.\n'+Array.from({length:1200},()=> '12:00:01,000 - [Información (combate)] Objetivo: -1 PdV (agua)\n').join('');
+    await app.parseFile();
+    const d=app.document, list=d.getElementById('combat-log-list');
+    if(list.querySelectorAll('.combat-log-event').length!==1000) throw Error('La cronología no respetó su límite');
+    const total=d.querySelector('.player-block[data-name="Jugador"] .player-total').textContent.replace(/\D/g, '');
+    if(total!=='1200') throw Error('El daño total perdió golpes: '+total);
+    d.querySelector('.player-block[data-name="Jugador"] .player-row').click();
+    if(d.querySelectorAll('.player-block[data-name="Jugador"] .personal-combat-log > div').length!==200) throw Error('El registro personal no respetó su límite');
+    result.textContent='PRUEBA CORRECTA';
+  }catch(error){result.textContent='PRUEBA FALLIDA: '+error.message;}
+};
+</script>
