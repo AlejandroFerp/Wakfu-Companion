@@ -681,6 +681,7 @@ function processLine(line) {
     { tag: "[fight log]", msg: "fight is over" },
     { tag: "[information (combat)]", msg: "le combat est terminé" },
     { tag: "[información (combate)]", msg: "el combate ha terminado" },
+    { tag: "[información (combate)]", msg: "combate terminado" },
     { tag: "[registro de lutas]", msg: "a luta terminou" },
   ];
 
@@ -694,6 +695,7 @@ function processLine(line) {
     saveFightToHistory();
     awaitingNewFight = true;
     updateWatchdogUI();
+    return;
   }
 
   if (logLineCache.has(line)) return;
