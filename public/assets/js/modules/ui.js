@@ -192,7 +192,7 @@ function renderMeter() {
         </div>
       `;
 
-      if (isUnknown && currentViewIndex === "live") {
+      if (isUnknown && p.name !== "Autor desconocido" && currentViewIndex === "live") {
         const buttons = document.createElement("div");
         buttons.className = "unknown-side-buttons";
         for (const [side, label] of [["ally", "Es aliado"], ["enemy", "Es enemigo"]]) {

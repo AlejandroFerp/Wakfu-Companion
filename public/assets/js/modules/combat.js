@@ -134,7 +134,7 @@ function processFightLog(line) {
     // ATTRIBUTION LOGIC
     let finalCaster = currentCaster;
     if (!currentCaster || currentCaster === "Unknown") {
-      finalCaster = target;
+      finalCaster = "Autor desconocido";
     }
 
     // 1. Check State Ownership (The Fix)
@@ -168,7 +168,7 @@ function processFightLog(line) {
     let finalSpell = spellOverride || currentSpell;
 
     // SIGNATURE REROUTING
-    if (finalSpell && finalSpell !== "Unknown Spell" && finalSpell !== "Passive / Indirect" && finalCaster !== "Dungeon Mechanic") {
+    if (finalCaster !== "Autor desconocido" && finalSpell && finalSpell !== "Unknown Spell" && finalSpell !== "Passive / Indirect" && finalCaster !== "Dungeon Mechanic") {
       finalCaster = getSignatureCaster(finalSpell, finalCaster);
     }
 
@@ -553,6 +553,7 @@ function getCombatSide(p, contextClasses = null, contextOverrides = null) {
   const overridesMap = contextOverrides || manualOverrides;
   const name = p.name;
   const lowerName = name.toLowerCase().trim();
+  if (name === "Autor desconocido") return "unknown";
 
   // 1. Manual Overrides (Highest Priority - from Drag & Drop)
   if (overridesMap[name] === "ally" || overridesMap[name] === "enemy") return overridesMap[name];
