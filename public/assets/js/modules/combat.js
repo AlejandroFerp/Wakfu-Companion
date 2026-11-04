@@ -514,22 +514,11 @@ const elementMap = {
   lumière: "Light",
 };
 
-// Helper to find a player by their detected class
-function findFirstPlayerByClass(targetClass) {
-  return Object.keys(playerClasses).find((name) => playerClasses[name] === targetClass);
-}
-
-// Helper to ensure damage goes to the rightful class owner
+// A spell name alone does not identify which character caused an indirect effect.
 function getSignatureCaster(spellName, defaultCaster) {
   const signatureClass = spellToClassMap[spellName];
-  if (!signatureClass) return defaultCaster;
-
-  // Check if the current caster is already the correct class
-  if (playerClasses[defaultCaster] === signatureClass) return defaultCaster;
-
-  // If not, try to find a player in the fight who IS that class
-  const classOwner = findFirstPlayerByClass(signatureClass);
-  return classOwner || defaultCaster;
+  if (!signatureClass || playerClasses[defaultCaster] === signatureClass) return defaultCaster;
+  return "Autor desconocido";
 }
 
 function routeCombatData(unit, armorUnits, sign, caster, spell, amount, element) {
