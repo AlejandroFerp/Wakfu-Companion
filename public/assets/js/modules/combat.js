@@ -241,7 +241,7 @@ function recordPersonalCombatEvent(player, event) {
   const events = personalCombatEvents[player] || (personalCombatEvents[player] = []);
   events.push({ ...event, time: event.time || combatEventTime, turn: personalTurns[player] || null });
   if (events.length > 200) events.shift();
-  if (event.type === "cast" || event.type === "affected") hasUnsavedChanges = true;
+  if (event.type === "cast") hasUnsavedChanges = true;
   if (expandedPlayers.has(player)) lastRenderSignature = "";
 }
 
