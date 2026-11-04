@@ -721,13 +721,6 @@ function processLine(line) {
     return;
   }
 
-  if (logLineCache.has(line)) return;
-  logLineCache.add(line);
-  if (logLineCache.size > MAX_CACHE_SIZE) {
-    const firstItem = logLineCache.values().next().value;
-    logLineCache.delete(firstItem);
-  }
-
   try {
     const isLoot = LOOT_KEYWORDS.some((kw) => lineLower.includes(kw));
     const isCombat = lineLower.includes("[fight log]") || lineLower.includes("[information (combat)]") || lineLower.includes("[información (combate)]") || lineLower.includes("[registro de lutas]");
