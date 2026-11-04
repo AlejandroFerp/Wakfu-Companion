@@ -676,6 +676,8 @@ function processLine(line) {
 
   const lineLower = line.toLowerCase();
 
+  if (typeof appendCombatLog === "function") appendCombatLog(line);
+
   // EXPLICIT SYSTEM CHECK
   const systemEndPattens = [
     { tag: "[fight log]", msg: "fight is over" },
@@ -715,9 +717,6 @@ function processLine(line) {
       processFightLog(line);
     }
 
-    if (line.match(/^\d{2}:\d{2}:\d{2}/)) {
-      processChatLog(line);
-    }
   } catch (err) {
     console.error("Parsing Error:", err);
   }
@@ -773,3 +772,4 @@ window.addEventListener("beforeunload", () => {
 
 // Export for main.js
 window.loadLiveCombatState = loadLiveCombatState;
+

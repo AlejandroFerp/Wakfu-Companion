@@ -1,0 +1,36 @@
+<!doctype html><meta charset="utf-8"><title>Prueba del registro de combate</title>
+<iframe id="app" src="../public/index.html" width="1200" height="750"></iframe>
+<p id="result">Comprobando...</p>
+<script>
+document.getElementById('app').onload = async () => {
+  const app = document.getElementById('app').contentWindow;
+  const result = document.getElementById('result');
+  try {
+    app.saveFileHandleToDB = async () => {};
+    let content = '';
+    const handle = { name: 'wakfu_chat.log', async getFile() { return new File([content], 'wakfu_chat.log'); } };
+    const drop = new app.Event('drop', { bubbles: true, cancelable: true });
+    Object.defineProperty(drop, 'dataTransfer', { value: { items: [{ kind: 'file', async getAsFileSystemHandle() { return handle; } }] } });
+    app.document.getElementById('drop-zone').dispatchEvent(drop);
+    await new Promise(resolve => setTimeout(resolve, 200));
+    content = [
+      '12:00:00,000 - [Información (combate)] Personaje lanza el hechizo Prueba. (Crítico)',
+      '12:00:01,000 - [Información (combate)] Objetivo: -1.234 PdV (fuego)',
+      '12:00:02,000 - [Información (combate)] Personaje: -2 PM',
+      '12:00:03,000 - [Información (combate)] Personaje: Escudo (+1 niv.)',
+      '12:00:04,000 - [Comercio] Mensaje privado de prueba',
+      ''
+    ].join('\n');
+    await app.parseFile();
+    const list = app.document.getElementById('combat-log-list');
+    const rows = [...list.querySelectorAll('.combat-log-event')];
+    if (rows.length !== 4 || rows.map(x => x.dataset.type).join(',') !== 'cast,damage,resource,state') throw Error('Eventos o categorías incorrectos');
+    if (!rows[1].textContent.includes('-1.234 PdV')) throw Error('Texto original perdido');
+    const filter = app.document.getElementById('combat-log-type');
+    filter.value = 'damage'; filter.dispatchEvent(new app.Event('change'));
+    if (rows.filter(x => !x.hidden).length !== 1 || rows[1].hidden) throw Error('Filtro incorrecto');
+    result.textContent = 'PRUEBA CORRECTA';
+  } catch (error) { result.textContent = 'PRUEBA FALLIDA: ' + error.message; }
+};
+</script>
+

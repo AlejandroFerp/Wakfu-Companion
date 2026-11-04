@@ -188,8 +188,23 @@
           <div id="tracker-notifications"></div>
         </div>
 
-        <!-- 3. Chat Translator -->
+        <!-- 3. Registro cronológico -->
         <div class="tool-panel">
+          <div class="panel-header">
+            <span class="header-label">Registro de combate</span>
+            <button id="combat-log-clear" type="button" style="margin-left:auto">Limpiar</button>
+          </div>
+          <div class="combat-log-filters">
+            <label>Tipo <select id="combat-log-type"><option value="all">Todos</option><option value="cast">Hechizos</option><option value="damage">Daño</option><option value="heal">Curas</option><option value="armor">Armadura</option><option value="resource">Recursos</option><option value="state">Estados</option><option value="other">Otros</option></select></label>
+            <label>Buscar <input id="combat-log-search" type="search" placeholder="Personaje, hechizo o efecto" /></label>
+          </div>
+          <div id="combat-log-list" role="log" aria-label="Registro de combate" aria-live="off">
+            <div class="empty-state">Esperando eventos de combate...</div>
+          </div>
+        </div>
+
+        <!-- Legacy chat controls remain hidden while dependencies are removed. -->
+        <div class="tool-panel" style="display: none">
           <div class="panel-header">
             <img src="./assets/img/headers/chat.png" class="header-label-icon" onerror="this.style.display='none'" />
             <span class="header-label">Chat & Translator</span>
@@ -784,6 +799,7 @@
     <script src="assets/js/modules/utils.js"></script>
     <script src="assets/js/modules/filesystem.js"></script>
     <script src="assets/js/modules/chat.js"></script>
+    <script src="assets/js/modules/combatLog.js"></script>
     <script src="assets/js/modules/combat.js"></script>
     <script src="assets/js/modules/tracker.js"></script>
     <script src="assets/js/modules/forecast.js"></script>
@@ -807,3 +823,4 @@
       data-y_margin="10"></script>
   </body>
 </html>
+
