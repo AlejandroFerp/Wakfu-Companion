@@ -66,6 +66,10 @@ document.getElementById('app').onload = async () => {
     content += 'pleto.\n';
     await app.parseFile();
     if (list.querySelectorAll('.combat-log-event').length !== 15 || !list.textContent.includes('Incompleto.')) throw Error('Línea dividida perdida');
+    const spanish = app.decodeLogLine(new Uint8Array([73, 110, 102, 111, 114, 109, 97, 99, 105, 243, 110]));
+    if (spanish !== 'Información') throw Error('Codificación Windows-1252 incorrecta');
+    const utf8 = app.decodeLogLine(new TextEncoder().encode('Información'));
+    if (utf8 !== 'Información') throw Error('Codificación UTF-8 incorrecta');
     result.textContent = 'PRUEBA CORRECTA';
   } catch (error) { result.textContent = 'PRUEBA FALLIDA: ' + error.message; }
 };
