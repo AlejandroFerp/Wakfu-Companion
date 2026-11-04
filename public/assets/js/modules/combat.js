@@ -1,6 +1,12 @@
 let fightStartTime = null;
 let pendingArmorDamage = null;
 
+function flushPendingArmorDamage() {
+  if (!pendingArmorDamage) return;
+  updateCombatData(fightData, pendingArmorDamage.caster, pendingArmorDamage.spell, pendingArmorDamage.amount, "Neutral");
+  pendingArmorDamage = null;
+}
+
 // HELPER CONSTANTS
 const NOISE_WORDS = new Set(["Block!", "Critical", "Critical Hit", "Critical Hit Expert", "Slow Influence", "Backstab", "Sidestab", "Berserk", "Influence", "Dodge", "Lock", "Increased Damage"]);
 
@@ -231,8 +237,9 @@ function detectClass(playerName, spellName) {
 }
 
 function saveFightToHistory() {
+  flushPendingArmorDamage();
   // 1. Check if there is data
-  if (Object.keys(fightData).length === 0 && Object.keys(healData).length === 0) return;
+  if (Object.keys(fightData).length === 0 && Object.keys(healData).length === 0 && Object.keys(armorData).length === 0) return;
 
   // 2. NEW: Check if we actually have new changes since last save
   if (!hasUnsavedChanges) return;
@@ -709,6 +716,7 @@ function processLine(line) {
   if (battleJustFinished) {
     saveFightToHistory();
     awaitingNewFight = true;
+    renderMeter();
     updateWatchdogUI();
     return;
   }
@@ -736,7 +744,9 @@ function processLine(line) {
 }
 
 function saveLiveCombatState() {
-  if (Object.keys(fightData).length === 0 && Object.keys(healData).length === 0) return;
+  if (Object.keys(fightData).length === 0 && Object.keys(healData).length === 0 && Object.keys(armorData).length === 0 && !pendingArmorDamage) return;
+
+  flushPendingArmorDamage();
 
   const state = {
     fightData,
@@ -767,7 +777,7 @@ function loadLiveCombatState() {
     fightStartTime = state.fightStartTime || null;
     awaitingNewFight = state.awaitingNewFight || false;
 
-    if (Object.keys(fightData).length > 0 || Object.keys(healData).length > 0) {
+    if (Object.keys(fightData).length > 0 || Object.keys(healData).length > 0 || Object.keys(armorData).length > 0) {
       window.isRestoredSession = true;
     }
 

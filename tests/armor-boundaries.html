@@ -1,0 +1,29 @@
+<!doctype html><meta charset="utf-8"><title>Prueba de armadura</title>
+<iframe id="app" src="../public/index.html" width="1000" height="600"></iframe>
+<p id="result">Comprobando...</p>
+<script>
+document.getElementById('app').onload = async () => {
+  const app = document.getElementById('app').contentWindow;
+  const result = document.getElementById('result');
+  try {
+    app.localStorage.removeItem('wakfu_fight_history');
+    app.saveFileHandleToDB = async () => {};
+    let content = '';
+    const handle = {name: 'wakfu_chat.log', async getFile() { return new File([content], 'wakfu_chat.log'); }};
+    const event = new app.Event('drop', {bubbles: true, cancelable: true});
+    Object.defineProperty(event, 'dataTransfer', {value: {items: [{kind: 'file', async getAsFileSystemHandle() { return handle; }}]}});
+    app.document.getElementById('drop-zone').dispatchEvent(event);
+    await new Promise(resolve => setTimeout(resolve, 200));
+    content += '12:00:00,000 - [Información (combate)] Jugador lanza el hechizo Piratería.\n12:00:01,000 - [Información (combate)] Objetivo: -321 Armadura\n12:00:02,000 - [Información (combate)] Combate terminado, haz clic aquí.\n';
+    await app.parseFile();
+    let history = JSON.parse(app.localStorage.getItem('wakfu_fight_history'));
+    if (history.length !== 1 || history[0].damage.Jugador.total !== 321) throw Error('No se guardó el daño final contra armadura');
+    content += '12:00:03,000 - [Información (combate)] Jugador lanza el hechizo Piratería.\n12:00:04,000 - [Información (combate)] Jugador: +75 Armadura\n12:00:05,000 - [Información (combate)] Combate terminado, haz clic aquí.\n';
+    await app.parseFile();
+    history = JSON.parse(app.localStorage.getItem('wakfu_fight_history'));
+    if (history.length !== 2 || history[0].armor.Jugador.total !== 75 || history[1].damage.Jugador.total !== 321) throw Error('No se guardó correctamente el combate de solo armadura');
+    result.textContent = 'PRUEBA CORRECTA';
+  } catch (error) { result.textContent = 'PRUEBA FALLIDA: ' + error.message; }
+};
+</script>
+
