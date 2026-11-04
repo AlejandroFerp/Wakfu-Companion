@@ -10,6 +10,13 @@ state = observeHypermageLine(state, 'Bucrota', line('Bucrota: Consume Abundancia
 assert.equal(state.abundance, null);
 state = observeHypermageLine(state, 'Bucrota', line("[Bucrota] Fuego fatuo: Guardado Acua'runa"));
 assert.equal(state.lastGeneratedRune, "Acua'runa");
+state = observeHypermageLine(state, 'Bucrota', line("Bucrota: Acua'runa (Niv. 1) (Corazón Acuático)"));
+assert.equal(state.runes.water, true);
+state = observeHypermageLine(state, 'Bucrota', line("Bucrota: ya no se encuentra bajo el estado 'Acua'runa'"));
+assert.equal(state.runes.water, false);
+assert.equal(state.lastGeneratedRune, null);
+state = observeHypermageLine(state, 'Bucrota', line("Bucrota: Telu'runa (Niv. 1)"));
+assert.equal(state.runes.earth, true);
 state = observeHypermageLine(state, 'Bucrota', line('Bucrota: 25 BC (Runa generada)'));
 assert.equal(state.lastBCChange, 25);
 state = observeHypermageLine(state, 'Bucrota', line('Bucrota: Brisa Cuadramental Almacenada (+500 niv.) (Corazón de Luz activo)'));
@@ -33,8 +40,9 @@ state = observeHypermageLine(state, 'Bucrota', line('Saco de Papas: Luminiscenci
 assert.equal(state.effects['Saco de Papas'].luminiscencia.name, 'Luminiscencia');
 state = observeHypermageLine(state, 'Bucrota', line('Saco de Papas: Debilidad Incandescente (Niv. 1) (Runa de fuego consumida)'));
 assert.equal(state.effects['Saco de Papas'].debilidad.name, 'Debilidad Incandescente');
+state = observeHypermageLine(state, 'Bucrota', line("Saco de Papas: ya no se encuentra bajo el estado 'Luminiscencia'"));
+assert.equal(state.effects['Saco de Papas'].luminiscencia.active, false);
 state = observeHypermageLine(state, 'Bucrota', line('Combate terminado, haz clic aquí'));
 assert.equal(nextCycleCost(state), null);
 assert.deepEqual(state.effects, {});
 console.log('Reglas de observación del hipermago: correctas');
-

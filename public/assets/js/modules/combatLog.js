@@ -11,6 +11,7 @@ const hyperPanel = document.getElementById("hyper-observations");
 const hyperChoiceLabel = document.getElementById("hyper-choice-label");
 const hyperDetected = document.getElementById("hyper-detected");
 const hyperStartTurn = document.getElementById("hyper-start-turn");
+const hyperTarget = document.getElementById("hyper-target");
 let hyperObserved = createHypermageObservations();
 
 function renderHyperObservations() {
@@ -19,15 +20,46 @@ function renderHyperObservations() {
     hyperPanel.textContent = "Esperando a identificar un hipermago por sus hechizos.";
     return;
   }
-  const value = v => v === null ? "sin observar" : String(v);
+  const targets = Object.keys(hyperObserved.effects);
+  const previousTarget = hyperTarget.value;
+  if (hyperTarget.dataset.targets !== JSON.stringify(targets)) {
+    hyperTarget.replaceChildren();
+    if (!targets.length) hyperTarget.add(new Option("Sin objetivo detectado", ""));
+    for (const target of targets) hyperTarget.add(new Option(target, target));
+    if (targets.includes(previousTarget)) hyperTarget.value = previousTarget;
+    hyperTarget.dataset.targets = JSON.stringify(targets);
+  }
+  hyperPanel.replaceChildren();
+  const add = (parent, tag, className, text) => { const el = document.createElement(tag); el.className = className; if (text !== undefined) el.textContent = text; parent.appendChild(el); return el; };
+  const runes = add(hyperPanel, "div", "class-runes");
+  const last = hyperObserved.lastGeneratedRune && hyperRuneElement(hyperObserved.lastGeneratedRune);
+  for (const [element, label] of [["fire", "Fuego"], ["water", "Agua"], ["air", "Aire"], ["earth", "Tierra"]]) {
+    const state = hyperObserved.runes[element];
+    const rune = add(runes, "div", `class-rune ${state === null ? "is-unknown" : state ? "is-active" : ""} ${last === element ? "is-last" : ""}`);
+    rune.title = `${label}: ${state === null ? "estado desconocido" : state ? "runa observada" : "runa retirada"}${last === element ? "; última runa guardada observada" : ""}`;
+    const icon = document.createElement("img"); icon.src = new URL(`assets/img/elements/${element}.png`, document.baseURI).href; icon.alt = ""; rune.appendChild(icon);
+    add(rune, "span", "", label);
+  }
+  const metrics = add(hyperPanel, "div", "class-metrics");
+  const metric = (label, value) => { const box = add(metrics, "div", "class-metric"); add(box, "span", "class-metric-label", `${label}: `); add(box, "strong", "class-metric-value", value); };
+  metric("Abundancia", hyperObserved.abundance === null ? "—" : `${hyperObserved.abundance}/100`);
   const cost = nextCycleCost(hyperObserved);
-  const cycle = cost === null ? "marca el inicio de tu turno" : cost === "agotado" ? "sin usos (5/5)" : `${cost} BC (${hyperObserved.cycleUses}/5 usos)`;
-  const effects = Object.entries(hyperObserved.effects).map(([target, states]) => {
-    const describe = entry => !entry ? "no observado" : entry.turn === 0 ? "observado; duración desconocida" : entry.turn === hyperObserved.turn ? "observado este turno" : "observado en turno anterior; comprobar";
-    return `${target}: Debilidad ${describe(states.debilidad)}; Luminiscencia ${describe(states.luminiscencia)}`;
-  });
-  hyperPanel.textContent = `Último observado · Abundancia: ${value(hyperObserved.abundance)} · Brisa: ${value(hyperObserved.breeze)} · Última runa guardada: ${value(hyperObserved.lastGeneratedRune)} · Último evento de BC: ${value(hyperObserved.lastBCChange)} · ${hyperObserved.bcFullSignal ? "BC lleno en la última señal · " : ""}Próximo Ciclo: ${cycle}${effects.length ? ` · Estados detectados (autor sin confirmar): ${effects.join(" | ")}` : ""}`;
+  metric("Próximo ciclo", cost === null ? "—" : cost === "agotado" ? "Sin usos" : `${cost} BC`);
+  const indicators = add(hyperPanel, "div", "class-effects");
+  const observed = hyperObserved.effects[hyperTarget.value] || {};
+  for (const [key, label] of [["debilidad", "Debilidad"], ["luminiscencia", "Luminiscencia"]]) {
+    const item = observed[key];
+    const recent = item && item.active && item.turn > 0 && item.turn === hyperObserved.turn;
+    const inactive = item && item.active === false;
+    const status = inactive ? "retirado" : recent ? "observado este turno" : item ? "duración por comprobar" : "sin información";
+    const badge = add(indicators, "span", `class-effect ${recent ? "is-active" : inactive ? "" : "is-unknown"}`);
+    add(badge, "span", "class-effect-icon", key === "debilidad" ? "✦" : "☼");
+    add(badge, "span", "", `${label}: ${status}`);
+    badge.title = "Estado observado en el registro; el autor no está confirmado.";
+  }
+  add(hyperPanel, "p", "class-note", `${last ? "Borde dorado: última runa guardada observada. " : ""}${hyperObserved.bcFullSignal ? "Última señal: BC lleno. " : ""}${cost === null ? "Marca el inicio de tu turno para calcular Ciclo Elemental." : cost === "agotado" ? "Has usado los cinco lanzamientos registrados." : `${hyperObserved.cycleUses}/5 lanzamientos registrados.`}`);
 }
+if (hyperTarget) hyperTarget.addEventListener("change", renderHyperObservations);
 if (hyperStartTurn) hyperStartTurn.addEventListener("click", () => {
   if (!hyperCharacter.value.trim()) return;
   hyperObserved = startHypermageTurn(hyperObserved);
@@ -169,4 +201,3 @@ if (combatLogClear) combatLogClear.addEventListener("click", () => {
 });
 if (combatLogType) combatLogType.addEventListener("change", updateCombatLogFilters);
 if (combatLogSearch) combatLogSearch.addEventListener("input", updateCombatLogFilters);
-

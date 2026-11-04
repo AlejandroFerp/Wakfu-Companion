@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nexus Wakfu Companion</title>
-    <link rel="stylesheet" href="assets/css/style.css?v=2" />
+    <link rel="stylesheet" href="assets/css/style.css?v=3" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
   </head>
   <body>
@@ -122,11 +122,30 @@
               </div>
               <div id="list-enemies" class="half-list"></div>
             </div>
+            <div class="meter-half" id="unknown-section" style="display:none">
+              <div class="half-header header-unknown"><span>POR IDENTIFICAR</span><span id="unknown-total-val" class="header-total">0</span></div>
+              <div id="list-unknown" class="half-list"></div>
+            </div>
           </div>
         </div>
 
-        <!-- 2. Item Tracker -->
-        <div class="tool-panel">
+        <!-- 2. Seguimiento de clase -->
+        <div class="tool-panel class-tracker" id="class-tracker">
+          <div class="panel-header"><span class="header-label">Seguimiento de clase</span>
+            <button class="pip-btn" type="button" onclick="togglePiP('class-tracker-content', 'Seguimiento de clase')" title="Ventana flotante" aria-label="Abrir seguimiento de clase en ventana flotante">⧉</button>
+          </div>
+          <div id="class-tracker-content" class="class-tracker-content">
+            <div class="class-tracker-controls"><label>Clase <select id="class-selector"><option value="huppermage">Hipermago</option></select></label>
+              <label id="hyper-choice-label" hidden>Personaje <select id="hyper-character"></select></label>
+              <span id="hyper-detected">Buscando hipermago...</span>
+            </div>
+            <label class="class-note">Objetivo <select id="hyper-target"><option value="">Sin objetivo detectado</option></select></label>
+            <div id="hyper-observations" aria-live="polite">Esperando a identificar un hipermago por sus hechizos.</div>
+            <button type="button" id="hyper-start-turn" class="class-turn-btn">Empieza mi turno</button>
+          </div>
+        </div>
+        <!-- Hidden legacy tracker: existing application dependencies remain available. -->
+        <div class="tool-panel" style="display:none">
           <div class="panel-header">
             <img src="./assets/img/headers/item_tracker.png" class="header-label-icon" onerror="this.style.display='none'" />
             <span class="header-label">Seguimiento</span>
@@ -202,13 +221,6 @@
           <div class="combat-log-reference">
             <label>Descripciones locales <input id="combat-spell-import" type="file" accept=".json,application/json" /></label>
             <span id="combat-spell-status">Opcional: importa las descripciones de tu juego.</span>
-          </div>
-          <div class="combat-log-reference">
-            <label id="hyper-choice-label" hidden>Hipermago <select id="hyper-character"></select></label>
-            <span id="hyper-detected">Buscando hipermago...</span>
-            <button type="button" id="hyper-start-turn">Empieza mi turno</button>
-            <button type="button" class="pip-btn" onclick="togglePiP('hyper-observations', 'Hipermago')" aria-label="Abrir indicadores del hipermago en ventana flotante">⧉</button>
-            <div id="hyper-observations" aria-live="polite">Esperando a identificar un hipermago por sus hechizos.</div>
           </div>
           <div id="combat-log-list" role="log" aria-label="Registro de combate" aria-live="off">
             <div class="empty-state">Esperando eventos de combate...</div>
@@ -811,8 +823,8 @@
     <script src="assets/js/modules/utils.js"></script>
     <script src="assets/js/modules/filesystem.js"></script>
     <script src="assets/js/modules/chat.js"></script>
-    <script src="assets/js/modules/hypermageRules.js?v=2"></script>
-    <script src="assets/js/modules/combatLog.js?v=6"></script>
+    <script src="assets/js/modules/hypermageRules.js?v=3"></script>
+    <script src="assets/js/modules/combatLog.js?v=7"></script>
     <script src="assets/js/modules/combat.js?v=6"></script>
     <script src="assets/js/modules/tracker.js"></script>
     <script src="assets/js/modules/forecast.js"></script>
@@ -836,4 +848,3 @@
       data-y_margin="10"></script>
   </body>
 </html>
-

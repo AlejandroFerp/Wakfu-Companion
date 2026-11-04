@@ -1047,6 +1047,27 @@ button.reset-btn:hover {
 .combat-log-reference { padding: 0 8px 8px; color: #aaa; font-size: 0.75rem; }
 .combat-log-reference input { max-width: 180px; }
 .combat-log-has-description { cursor: help; }
+.class-tracker { min-height: 350px; }
+.class-tracker-content { padding: 10px 14px; overflow-y: auto; color: #e8edf1; }
+.class-tracker-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: .85rem; color: #aab9c4; }
+.class-tracker select { background: #202b35; color: #fff; border: 1px solid #496175; border-radius: 5px; padding: 5px; }
+.class-runes { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 0; }
+.class-rune { width: 58px; padding: 6px; text-align: center; border: 1px solid #40515d; border-radius: 8px; opacity: .5; background: #121b23; font-size: .7rem; }
+.class-rune img { display: block; width: 32px; height: 32px; object-fit: contain; margin: 0 auto 4px; }
+.class-rune.is-active { opacity: 1; border-color: #75b5ce; }
+.class-rune.is-last { outline: 2px solid #ffd45d; outline-offset: 2px; }
+.class-rune.is-unknown { opacity: .65; border-style: dashed; }
+.class-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.class-metric { background: #121b23; border: 1px solid #344857; border-radius: 8px; padding: 10px; }
+.class-metric-label { display: block; color: #aab9c4; font-size: .72rem; text-transform: uppercase; }
+.class-metric-value { display: block; font-size: 1.4rem; font-weight: bold; color: #f3d274; margin-top: 3px; }
+.class-effects { display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap; }
+.class-effect { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 6px; background: #27323a; color: #c6d0d8; font-size: .8rem; }
+.class-effect-icon { font-size: 1.15rem; line-height: 1; }
+.class-effect.is-active { color: #131a20; background: #8adcb3; }
+.class-effect.is-unknown { color: #ffe0a0; border: 1px dashed #aa8d4f; }
+.class-note { font-size: .75rem; color: #9aabb8; line-height: 1.4; margin: 8px 0; }
+.class-turn-btn { margin-top: 10px; padding: 7px 10px; border-radius: 5px; border: 1px solid #4a7287; color: #dff6ff; background: #203b49; cursor: pointer; }
 
 #chat-list {
   overflow-y: auto;
@@ -3352,4 +3373,3 @@ body.pip-window .empty-state {
     transform: translateY(0);
   }
 }
-

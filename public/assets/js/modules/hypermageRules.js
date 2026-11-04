@@ -1,6 +1,10 @@
 // Evidence-based observations from Spanish combat logs, scoped by character.
 function createHypermageObservations() {
-  return { abundance: null, breeze: null, lastGeneratedRune: null, lastBCChange: null, lastElementalCycle: null, cycleUses: null, turn: 0, bcFullSignal: false, effects: {} };
+  return { abundance: null, breeze: null, lastGeneratedRune: null, runes: { fire: null, water: null, air: null, earth: null }, lastBCChange: null, lastElementalCycle: null, cycleUses: null, turn: 0, bcFullSignal: false, effects: {} };
+}
+
+function hyperRuneElement(name) {
+  return ({ "incan'runa": "fire", "acua'runa": "water", "aer'runa": "air", "telu'runa": "earth" })[name.toLocaleLowerCase("es")] || null;
 }
 
 // Only the user can assert their turn until the log provides a reliable signal.
@@ -22,11 +26,19 @@ function observeHypermageLine(previous, character, line) {
     next.cycleUses = null;
     next.effects = {};
     next.bcFullSignal = false;
+    next.runes = { fire: null, water: null, air: null, earth: null };
+    next.lastGeneratedRune = null;
+    next.abundance = null;
     return next;
+  }
+  const expired = content.match(/^(.+?): ya no se encuentra bajo el estado ['’](Debilidad[^']*|Luminiscencia)['’]/i);
+  if (expired) {
+    const key = /^Luminiscencia$/i.test(expired[2]) ? "luminiscencia" : "debilidad";
+    next.effects = { ...previous.effects, [expired[1]]: { ...(previous.effects[expired[1]] || {}), [key]: { turn: previous.turn, name: expired[2], active: false } } };
   }
   const effect = content.match(/^(.+?): (Debilidad[^:]*|Luminiscencia) \(Niv\. \d+\)(?: \(([^)]+)\))?/i);
   if (effect && (!/^Luminiscencia$/i.test(effect[2]) || /^Runas consumidas$/i.test(effect[3] || ""))) {
-    next.effects = { ...previous.effects, [effect[1]]: { ...(previous.effects[effect[1]] || {}), [/^Luminiscencia$/i.test(effect[2]) ? "luminiscencia" : "debilidad"]: { turn: previous.turn, name: effect[2] } } };
+    next.effects = { ...previous.effects, [effect[1]]: { ...(previous.effects[effect[1]] || {}), [/^Luminiscencia$/i.test(effect[2]) ? "luminiscencia" : "debilidad"]: { turn: previous.turn, name: effect[2], active: true } } };
   }
   const prefix = `${character}: `;
   const wispPrefix = `[${character}] Fuego fatuo: Guardado `;
@@ -46,6 +58,14 @@ function observeHypermageLine(previous, character, line) {
   }
   if (!content.startsWith(prefix)) return next;
   const event = content.slice(prefix.length);
+  const runeApplied = event.match(/^([^:]+?'runa) \(Niv\.\s*\d+\)/i);
+  const runeRemoved = event.match(/^ya no se encuentra bajo el estado ['’]([^]+?'runa)['’]/i);
+  const runeName = runeApplied?.[1] || runeRemoved?.[1];
+  const element = runeName && hyperRuneElement(runeName);
+  if (element) {
+    next.runes = { ...previous.runes, [element]: Boolean(runeApplied) };
+    if (runeRemoved && previous.lastGeneratedRune === runeName) next.lastGeneratedRune = null;
+  }
   let state = event.match(/^Abundancia \(\+?(\d+) niv\.\)/i);
   if (state) next.abundance = Number(state[1]);
   else if (/^Consume Abundancia\b/i.test(event)) next.abundance = null;
@@ -62,4 +82,3 @@ function observeHypermageLine(previous, character, line) {
 }
 
 if (typeof module !== "undefined") module.exports = { createHypermageObservations, observeHypermageLine, startHypermageTurn, nextCycleCost };
-
