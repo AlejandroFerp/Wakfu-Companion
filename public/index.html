@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,28 +12,28 @@
       <!-- Setup (Overlay) -->
       <div id="setup-panel">
         <div class="drop-zone" id="drop-zone">
-          <h3>DRAG 'wakfu_chat.log' HERE</h3>
-          <p style="color: #aaa; margin-bottom: 5px">Default Path (Copy & Paste in File Explorer):</p>
+          <h3>ARRASTRA AQUÍ «wakfu_chat.log»</h3>
+          <p style="color: #aaa; margin-bottom: 5px">Ruta predeterminada (pégala en el explorador de archivos):</p>
 
           <!-- Cleaned Path Container -->
           <div class="path-container">
             <code id="log-path" class="log-path-code">%AppData%\zaap\gamesLogs\wakfu\logs\</code>
-            <button id="copy-path-btn" class="copy-path-btn">COPY</button>
+            <button id="copy-path-btn" class="copy-path-btn">COPIAR</button>
           </div>
-          <p>Drag the file directly from your folder to start.</p>
+          <p>Arrastra el archivo desde la carpeta para comenzar.</p>
         </div>
 
         <!-- Cleaned Reconnect Container -->
         <div id="reconnect-container" class="reconnect-container">
-          <p class="prev-file-label">Previous file found:</p>
+          <p class="prev-file-label">Archivo anterior encontrado:</p>
           <h3 id="prev-filename" class="prev-filename">wakfu-chat.log</h3>
 
-          <button id="reconnect-btn" class="add-track-btn reconnect-action-btn">RECONNECT</button>
+          <button id="reconnect-btn" class="add-track-btn reconnect-action-btn">RECONECTAR</button>
 
-          <p class="browser-warning">(Browser requires confirmation)</p>
+          <p class="browser-warning">(El navegador requiere confirmación)</p>
 
           <div class="new-file-wrapper">
-            <button id="new-file-btn" class="new-file-link">Select different file</button>
+            <button id="new-file-btn" class="new-file-link">Seleccionar otro archivo</button>
           </div>
         </div>
       </div>
@@ -45,15 +45,15 @@
           <div class="panel-header tab-header">
             <div class="meter-tab active" id="tab-damage" onclick="switchMeterMode('damage')">
               <img src="./assets/img/headers/damage.png" class="tab-icon" onerror="this.style.display='none'" />
-              DAMAGE
+              DAÑO
             </div>
             <div class="meter-tab" id="tab-healing" onclick="switchMeterMode('healing')">
               <img src="./assets/img/headers/healing.png" class="tab-icon" onerror="this.style.display='none'" />
-              HEALING
+              CURAS
             </div>
             <div class="meter-tab" id="tab-armor" onclick="switchMeterMode('armor')">
               <img src="./assets/img/headers/armor.png" class="tab-icon" onerror="this.style.display='none'" />
-              ARMOR
+              ARMADURA
             </div>
             <!-- PiP Button -->
             <button class="pip-btn" onclick="togglePiP('meter-split-container', 'Combat Meter')" title="Picture in Picture">⧉</button>
@@ -78,7 +78,7 @@
 
               <div style="flex-grow: 1"></div>
               <button class="export-btn" id="discordBtn" title="Copy Report for Discord" onclick="exportToDiscord()">📋</button>
-              <button class="reset-btn" id="resetBtn">RESET</button>
+              <button class="reset-btn" id="resetBtn">REINICIAR</button>
             </div>
           </div>
 
@@ -89,7 +89,7 @@
               <div class="half-header header-allies">
                 <div class="header-title-group">
                   <img src="./assets/img/headers/allies.png" class="header-icon" onerror="this.style.display='none'" />
-                  <span>ALLIES</span>
+                  <span>ALIADOS</span>
                 </div>
                 <!-- Independent Expand/Collapse Buttons -->
                 <div class="header-btn-group">
@@ -110,7 +110,7 @@
               <div class="half-header header-enemies">
                 <div class="header-title-group">
                   <img src="./assets/img/headers/enemies.png" class="header-icon" onerror="this.style.display='none'" />
-                  <span>ENEMIES</span>
+                  <span>ENEMIGOS</span>
                 </div>
                 <!-- Independent Expand/Collapse Buttons -->
                 <div class="header-btn-group">
