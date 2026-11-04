@@ -1,0 +1,25 @@
+<!doctype html><meta charset="utf-8"><title>Prueba de atribución de curas</title>
+<script>localStorage.removeItem('wakfu_fight_history');localStorage.removeItem('wakfu_live_combat_state');</script>
+<iframe id="app" src="../public/index.html" width="1000" height="600"></iframe><p id="result">Comprobando...</p>
+<script>
+document.getElementById('app').onload=async()=>{
+  const app=document.getElementById('app').contentWindow, result=document.getElementById('result');
+  try {
+    app.saveFileHandleToDB=async()=>{};let content='';
+    const handle={name:'wakfu_chat.log',async getFile(){return new File([content],'wakfu_chat.log');}};
+    const drop=new app.Event('drop',{bubbles:true,cancelable:true});
+    Object.defineProperty(drop,'dataTransfer',{value:{items:[{kind:'file',async getAsFileSystemHandle(){return handle;}}]}});
+    app.document.getElementById('drop-zone').dispatchEvent(drop);await new Promise(r=>setTimeout(r,200));
+    content=['12:00:00,000 - [Información (combate)] Jugador lanza el hechizo Piratería.',
+      '12:00:01,000 - [Información (combate)] Aliado desconocido: +100 PdV (agua)',
+      '12:00:02,000 - [Información (combate)] Curador desconocido lanza el hechizo Cura de prueba.',
+      '12:00:03,000 - [Información (combate)] Otro desconocido: +80 PdV (agua)',
+      '12:00:04,000 - [Información (combate)] Combate terminado.',''].join('\n');
+    await app.parseFile();
+    const h=JSON.parse(app.localStorage.getItem('wakfu_fight_history'))[0].healing;
+    if(h.Jugador?.total!==100 || h['Curador desconocido']?.total!==80 || h['Aliado desconocido'] || h['Otro desconocido']) throw Error('La cura no se asignó a quien lanzó el hechizo');
+    result.textContent='PRUEBA CORRECTA';
+  }catch(e){result.textContent='PRUEBA FALLIDA: '+e.message;}
+};
+</script>
+

@@ -149,14 +149,15 @@ function processFightLog(line) {
     // HEAL SAFEGUARD & MECHANIC DETECTION
     if (sign === "+") {
       const casterIsAlly = finalCaster && isPlayerAlly({ name: finalCaster });
-      const targetIsAlly = isPlayerAlly({ name: target });
+      const casterIsKnownEnemy = isKnownCombatEnemy(finalCaster);
+      const targetIsKnownEnemy = isKnownCombatEnemy(target);
 
-      if (casterIsAlly && !targetIsAlly) {
+      if (casterIsAlly && targetIsKnownEnemy) {
         finalCaster = target;
         if (!spellOverride) spellOverride = "Mechanic / Passive";
       }
 
-      if (!casterIsAlly && !targetIsAlly && finalCaster !== target) {
+      if (casterIsKnownEnemy && targetIsKnownEnemy && finalCaster !== target) {
         const spellNameToCheck = spellOverride || currentSpell;
         if (spellNameToCheck && !spellToClassMap[spellNameToCheck]) {
           finalCaster = target;
@@ -537,6 +538,13 @@ function routeCombatData(unit, armorUnits, sign, caster, spell, amount, element)
   } else {
     updateCombatData(fightData, caster, spell, amount, element);
   }
+}
+
+// An unrecognised target is not evidence that it belongs to the enemy team.
+function isKnownCombatEnemy(name) {
+  if (!name) return false;
+  if (manualOverrides[name]) return manualOverrides[name] === "enemy";
+  return Boolean(monsterLookup[name.toLowerCase().trim()]);
 }
 
 // Helper: Determine if a player object belongs to Allies or Enemies
