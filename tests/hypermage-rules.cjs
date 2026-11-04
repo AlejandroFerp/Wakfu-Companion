@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const { createHypermageObservations, observeHypermageLine } = require('../public/assets/js/modules/hypermageRules.js');
+const { createHypermageObservations, observeHypermageLine, startHypermageTurn, nextCycleCost } = require('../public/assets/js/modules/hypermageRules.js');
 const line = text => `20:25:26,508 - [Información (combate)] ${text}`;
 let state = createHypermageObservations();
 for (const n of [10, 20, 50, 60]) state = observeHypermageLine(state, 'Bucrota', line(`Bucrota: Abundancia (+${n} niv.) (Runa generada)`));
@@ -14,5 +14,27 @@ state = observeHypermageLine(state, 'Bucrota', line('Bucrota: 25 BC (Runa genera
 assert.equal(state.lastBCChange, 25);
 state = observeHypermageLine(state, 'Bucrota', line('Bucrota: Brisa Cuadramental Almacenada (+500 niv.) (Corazón de Luz activo)'));
 assert.equal(state.breeze, 500);
+assert.equal(nextCycleCost(state), null);
+state = startHypermageTurn(state);
+for (const cost of [0, 50, 100, 150, 200]) {
+  assert.equal(nextCycleCost(state), cost);
+  state = observeHypermageLine(state, 'Bucrota', line('Bucrota lanza el hechizo Ciclo Elemental.'));
+}
+assert.equal(nextCycleCost(state), 'agotado');
+state = startHypermageTurn(state);
+assert.equal(nextCycleCost(state), 0);
+state = observeHypermageLine(state, 'Bucrota', line('Bucrota: 0 BC (Runa generada)'));
+assert.equal(state.bcFullSignal, true);
+state = observeHypermageLine(state, 'Bucrota', line('Bucrota: 25 BC (Runa generada)'));
+assert.equal(state.bcFullSignal, false);
+state = observeHypermageLine(state, 'Bucrota', line('Saco de Papas: Luminiscencia (Niv. 1)'));
+assert.equal(state.effects['Saco de Papas'], undefined);
+state = observeHypermageLine(state, 'Bucrota', line('Saco de Papas: Luminiscencia (Niv. 1) (Runas consumidas)'));
+assert.equal(state.effects['Saco de Papas'].luminiscencia.name, 'Luminiscencia');
+state = observeHypermageLine(state, 'Bucrota', line('Saco de Papas: Debilidad Incandescente (Niv. 1) (Runa de fuego consumida)'));
+assert.equal(state.effects['Saco de Papas'].debilidad.name, 'Debilidad Incandescente');
+state = observeHypermageLine(state, 'Bucrota', line('Combate terminado, haz clic aquí'));
+assert.equal(nextCycleCost(state), null);
+assert.deepEqual(state.effects, {});
 console.log('Reglas de observación del hipermago: correctas');
 

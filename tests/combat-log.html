@@ -9,6 +9,7 @@ document.getElementById('app').onload = async () => {
     const hyper = app.document.getElementById('hyper-character');
     hyper.value = 'Bucrota';
     hyper.dispatchEvent(new app.Event('input'));
+    app.document.getElementById('hyper-start-turn').click();
     app.saveFileHandleToDB = async () => {};
     let content = '';
     const handle = { name: 'wakfu_chat.log', async getFile() { return new File([content], 'wakfu_chat.log'); } };
@@ -27,14 +28,18 @@ document.getElementById('app').onload = async () => {
       '12:00:03,800 - [Información (combate)] Bucrota: Abundancia (+50 niv.) (Plenitud)',
       '12:00:03,900 - [Información (combate)] Bucrota: Abundancia (+60 niv.) (Runa consumida)',
       '12:00:03,950 - [Información (combate)] Bucrota: 25 BC (Runa generada)',
+      '12:00:03,960 - [Información (combate)] Bucrota lanza el hechizo Ciclo Elemental.',
+      '12:00:03,970 - [Información (combate)] Objetivo: Luminiscencia (Niv. 1) (Runas consumidas)',
       '12:00:04,000 - [Comercio] Mensaje privado de prueba',
       ''
     ].join('\n');
     await app.parseFile();
     const list = app.document.getElementById('combat-log-list');
     const rows = [...list.querySelectorAll('.combat-log-event')];
-    if (rows.length !== 10 || rows.map(x => x.dataset.type).join(',') !== 'cast,damage,resource,state,damage,summon,movement,state,state,resource') throw Error('Eventos o categorías incorrectos');
+    if (rows.length !== 12 || rows.map(x => x.dataset.type).join(',') !== 'cast,damage,resource,state,damage,summon,movement,state,state,resource,cast,state') throw Error('Eventos o categorías incorrectos');
     if (!app.document.getElementById('hyper-observations').textContent.includes('Abundancia: 60')) throw Error('Observación de abundancia incorrecta');
+    if (!app.document.getElementById('hyper-observations').textContent.includes('Próximo Ciclo: 50 BC')) throw Error('Coste de ciclo incorrecto');
+    if (!app.document.getElementById('hyper-observations').textContent.includes('Luminiscencia observado este turno')) throw Error('Luminiscencia no detectada');
     if (!rows[1].textContent.includes('-1.234 PdV')) throw Error('Texto original perdido');
     if (!rows[0].querySelector('[aria-label="Crítico"]')) throw Error('Falta el indicador de crítico');
     if (!rows[4].querySelector('[aria-label="Espalda"]')) throw Error('Falta el indicador de espalda');
@@ -52,10 +57,10 @@ document.getElementById('app').onload = async () => {
     filter.value = 'all'; filter.dispatchEvent(new app.Event('change'));
     content += '12:00:05,000 - [Información (combate)] Personaje lanza el hechizo Incom';
     await app.parseFile();
-    if (list.querySelectorAll('.combat-log-event').length !== 10) throw Error('Se mostró una línea incompleta');
+    if (list.querySelectorAll('.combat-log-event').length !== 12) throw Error('Se mostró una línea incompleta');
     content += 'pleto.\n';
     await app.parseFile();
-    if (list.querySelectorAll('.combat-log-event').length !== 11 || !list.textContent.includes('Incompleto.')) throw Error('Línea dividida perdida');
+    if (list.querySelectorAll('.combat-log-event').length !== 13 || !list.textContent.includes('Incompleto.')) throw Error('Línea dividida perdida');
     result.textContent = 'PRUEBA CORRECTA';
   } catch (error) { result.textContent = 'PRUEBA FALLIDA: ' + error.message; }
 };

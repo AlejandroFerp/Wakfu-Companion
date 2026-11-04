@@ -8,6 +8,7 @@ const combatSpellStatus = document.getElementById("combat-spell-status");
 const MAX_COMBAT_LOG_EVENTS = 1000;
 const hyperCharacter = document.getElementById("hyper-character");
 const hyperPanel = document.getElementById("hyper-observations");
+const hyperStartTurn = document.getElementById("hyper-start-turn");
 let hyperObserved = createHypermageObservations();
 
 function renderHyperObservations() {
@@ -17,8 +18,19 @@ function renderHyperObservations() {
     return;
   }
   const value = v => v === null ? "sin observar" : String(v);
-  hyperPanel.textContent = `Último observado · Abundancia: ${value(hyperObserved.abundance)} · Brisa: ${value(hyperObserved.breeze)} · Última runa guardada: ${value(hyperObserved.lastGeneratedRune)} · Último evento de BC: ${value(hyperObserved.lastBCChange)} · Próximo ciclo: desconocido`;
+  const cost = nextCycleCost(hyperObserved);
+  const cycle = cost === null ? "marca el inicio de tu turno" : cost === "agotado" ? "sin usos (5/5)" : `${cost} BC (${hyperObserved.cycleUses}/5 usos)`;
+  const effects = Object.entries(hyperObserved.effects).map(([target, states]) => {
+    const describe = entry => !entry ? "no observado" : entry.turn === 0 ? "observado; duración desconocida" : entry.turn === hyperObserved.turn ? "observado este turno" : "observado en turno anterior; comprobar";
+    return `${target}: Debilidad ${describe(states.debilidad)}; Luminiscencia ${describe(states.luminiscencia)}`;
+  });
+  hyperPanel.textContent = `Último observado · Abundancia: ${value(hyperObserved.abundance)} · Brisa: ${value(hyperObserved.breeze)} · Última runa guardada: ${value(hyperObserved.lastGeneratedRune)} · Último evento de BC: ${value(hyperObserved.lastBCChange)} · ${hyperObserved.bcFullSignal ? "BC lleno en la última señal · " : ""}Próximo Ciclo: ${cycle}${effects.length ? ` · Estados detectados (autor sin confirmar): ${effects.join(" | ")}` : ""}`;
 }
+if (hyperStartTurn) hyperStartTurn.addEventListener("click", () => {
+  if (!hyperCharacter.value.trim()) return;
+  hyperObserved = startHypermageTurn(hyperObserved);
+  renderHyperObservations();
+});
 if (hyperCharacter) hyperCharacter.addEventListener("input", () => {
   hyperObserved = createHypermageObservations();
   renderHyperObservations();
