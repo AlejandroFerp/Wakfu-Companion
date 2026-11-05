@@ -1,0 +1,37 @@
+<!doctype html><meta charset="utf-8"><title>Prueba de daño por turnos</title>
+<script>localStorage.removeItem('wakfu_fight_history');localStorage.removeItem('wakfu_live_combat_state');</script>
+<iframe id="app" src="../public/index.html" width="1200" height="800"></iframe><p id="result">Comprobando...</p>
+<script>
+document.getElementById('app').onload = async () => {
+  const app=document.getElementById('app').contentWindow, result=document.getElementById('result');
+  try {
+    app.saveFileHandleToDB=async()=>{};let content='';
+    const handle={name:'wakfu_chat.log',async getFile(){return new File([content],'wakfu_chat.log')}};
+    const drop=new app.Event('drop',{bubbles:true,cancelable:true});
+    Object.defineProperty(drop,'dataTransfer',{value:{items:[{kind:'file',async getAsFileSystemHandle(){return handle}}]}});
+    app.document.getElementById('drop-zone').dispatchEvent(drop);await new Promise(r=>setTimeout(r,200));
+    content=[
+      '12:00:00,000 - [Información (combate)] Alfa lanza el hechizo Piratería.',
+      '12:00:01,000 - [Información (combate)] Objetivo: -100 PdV (fuego)',
+      '12:00:02,000 - [Información (combate)] 30 segundos devueltos para el siguiente turno.',
+      '12:00:03,000 - [Información (combate)] Alfa lanza el hechizo Piratería.',
+      '12:00:03,080 - [Información (combate)] Alfa lanza el hechizo Piratería.',
+      '12:00:04,000 - [Información (combate)] Objetivo: -300 PdV (fuego)',
+      '12:00:05,000 - [Información (combate)] Beta lanza el hechizo Piratería.',
+      '12:00:06,000 - [Información (combate)] Objetivo: -200 PdV (fuego)',
+      '12:00:07,000 - [Información (combate)] 30 segundos devueltos para el siguiente turno.',
+      '12:00:08,000 - [Información (combate)] Beta lanza el hechizo Piratería.',
+      '12:00:09,000 - [Información (combate)] Objetivo: -400 PdV (fuego)',''].join('\n');
+    await app.parseFile();app.saveLiveCombatState();
+    const state=JSON.parse(app.localStorage.getItem('wakfu_live_combat_state'));
+    if(state.personalDamageByTurn.Alfa?.['1']!==300 || state.personalDamageByTurn.Beta?.['1']!==400) throw Error('El daño se asignó al turno equivocado');
+    if(state.personalTurnSources.Alfa?.['1']!=='estimated' || state.personalTurnSources.Beta?.['1']!=='estimated') throw Error('Falta distinguir la estimación');
+    if(state.personalCombatEvents.Beta.filter(e=>e.type==='damage' && e.turn===null).length!==1) throw Error('Se perdió el daño sin turno');
+    if(state.personalCombatEvents.Alfa.filter(e=>e.type==='cast').length!==2) throw Error('No se filtró el lanzamiento duplicado');
+    const row=app.document.querySelector('.player-block[data-name="Alfa"] .player-row');if(!row)throw Error('No aparece el jugador');row.click();
+    const block=app.document.querySelector('.player-block[data-name="Alfa"]');
+    if(!block.textContent.includes('Turno 1 (estimado): 300')) throw Error('Falta el desglose visible');
+    result.textContent='PRUEBA CORRECTA';
+  } catch(e) { result.textContent='PRUEBA FALLIDA: '+e.message; }
+};
+</script>

@@ -236,20 +236,21 @@ function renderMeter() {
           mark.className = "personal-turn-button";
           mark.dataset.player = p.name;
           mark.textContent = "Marcar inicio de turno";
-          mark.title = "Marca manualmente cada inicio de turno. El daño entre marcas puede incluir daño fuera de turno.";
+          mark.title = "Marca manualmente el inicio si no fue detectado; el siguiente aviso de turno cerrará el tramo.";
           detail.appendChild(mark);
         }
         const summary = document.createElement("div");
         const markedDamage = currentViewIndex === "live" ? (personalTurnDamage[p.name] || 0) : (fightHistory[currentViewIndex]?.personalTurnDamage?.[p.name] || 0);
-        summary.textContent = turns ? `DPT entre marcas manuales: ${Math.round(markedDamage / turns).toLocaleString()} · ${turns} turno(s) marcados · puede incluir daño fuera de turno · últimos 200 eventos` : "DPT no disponible: marca el inicio de cada turno. Las acciones anteriores quedan sin turno.";
+        summary.textContent = turns ? `Daño medio por turno observado: ${Math.round(markedDamage / turns).toLocaleString()} · ${turns} turno(s) · identificación estimada cuando procede` : "Sin turnos identificados; el daño anterior permanece sin asignar.";
         detail.appendChild(summary);
         if (turns) {
           const totals = currentViewIndex === "live" ? (personalDamageByTurn[p.name] || {}) : (fightHistory[currentViewIndex]?.personalDamageByTurn?.[p.name] || {});
           const turnsSummary = document.createElement("div");
           const firstTurn = Math.max(1, turns - 19);
+          const sources = currentViewIndex === "live" ? (personalTurnSources[p.name] || {}) : (fightHistory[currentViewIndex]?.personalTurnSources?.[p.name] || {});
           turnsSummary.textContent = Array.from({ length: turns - firstTurn + 1 }, (_, i) => {
             const number = firstTurn + i;
-            return `Turno ${number}: ${typeof totals[number] === "number" ? totals[number].toLocaleString() : "sin datos"}`;
+            return `Turno ${number} (${sources[number] === "estimated" ? "estimado" : "marcado"}): ${typeof totals[number] === "number" ? totals[number].toLocaleString() : "sin datos"}`;
           }).join(" · ");
           detail.appendChild(turnsSummary);
         }
@@ -258,8 +259,8 @@ function renderMeter() {
         if (!events.length) log.textContent = "Sin acciones registradas para este combate.";
         for (const event of events) {
           const entry = document.createElement("div");
-          const turn = event.turn ? `Turno ${event.turn} (marcado)` : "Turno sin identificar";
-          const description = event.type === "cast" ? `Lanza ${event.spell}` : event.type === "damage" ? `${event.spell}: ${event.amount.toLocaleString()} de daño atribuido` : event.type === "affected" ? `Evento sobre el personaje: ${event.message}` : "Inicio de turno marcado";
+          const turn = event.turn ? `Turno ${event.turn} (${event.turnSource === "estimated" ? "estimado" : "marcado"})` : "Turno sin identificar";
+          const description = event.type === "cast" ? `Lanza ${event.spell}` : event.type === "damage" ? `${event.spell}: ${event.amount.toLocaleString()} de daño atribuido` : event.type === "affected" ? `Evento sobre el personaje: ${event.message}` : event.turnSource === "estimated" ? "Inicio de turno estimado" : "Inicio de turno marcado";
           const abilityIcon = event.spell && typeof getCombatSpellIcon === "function" ? getCombatSpellIcon(event.spell) : null;
           if (abilityIcon) {
             const icon = document.createElement("img");

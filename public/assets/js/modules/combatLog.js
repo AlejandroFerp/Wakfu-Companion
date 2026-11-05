@@ -270,7 +270,7 @@ function appendCombatLog(line) {
   const duplicate = isDuplicateCombatEvent(line, match[2]);
   const fileLabel = document.getElementById("active-filename");
   if (fileLabel) fileLabel.title = possiblyMultipleClients() ? "Posibles varias cuentas: mensajes duplicados detectados" : "Archivo de registro activo";
-  if (duplicate) return;
+  if (duplicate) return false;
   syncHypermageSelection();
   if (typeof observeSelotropLog === "function") observeSelotropLog(line, Boolean(combatLogBatch));
   if (hyperCharacter && hyperCharacter.value.trim()) {
