@@ -45,8 +45,4 @@ assert.equal(state.effects['Saco de Papas'].luminiscencia.active, false);
 state = observeHypermageLine(state, 'Bucrota', line('Combate terminado, haz clic aquí'));
 assert.equal(nextCycleCost(state), null);
 assert.deepEqual(state.effects, {});
-state = observeHypermageLine(state, 'Bucrota', line('Objetivo: -30 PdV (daño por la espalda)'));
-assert.equal(state.lastDamageBack, true);
-state = observeHypermageLine(state, 'Bucrota', line('Objetivo: -20 PdV'));
-assert.equal(state.lastDamageBack, false);
 console.log('Reglas de observación del hipermago: correctas');

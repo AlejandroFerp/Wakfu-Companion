@@ -2,7 +2,7 @@
 
 Abre [tu página](https://alejandroferp.github.io/Wakfu-Companion/) en el navegador. Si aparece **Reconectar**, púlsalo y acepta el acceso al archivo cuando el navegador lo solicite. Si no aparece, arrastra `wakfu_chat.log` desde la carpeta `%AppData%\zaap\gamesLogs\wakfu\logs\` a la página. El archivo se procesa localmente en el navegador.
 
-El panel **Registro de combate** muestra los eventos que llegan del juego, con filtros por tipo y búsqueda por texto. Los indicadores de crítico y espalda aparecen cuando el texto del juego los menciona. Si hay descripciones locales cargadas, pasa el ratón por un lanzamiento para consultarlas.
+El panel **Registro de combate** muestra los eventos que llegan del juego, con filtros por tipo y búsqueda por texto. El indicador de crítico aparece cuando el texto del juego lo menciona. Si hay descripciones locales cargadas, pasa el ratón por un lanzamiento para consultarlas.
 
 En **Datos locales de hechizos** puedes importar el archivo de descripciones y el archivo de iconos creados a partir de tu instalación. Se guardan en el navegador y aparecen tanto en la cronología como en el detalle personal. No todos los hechizos tienen un icono asociado: se omiten las coincidencias ambiguas y los datos no disponibles. La correspondencia entre identificadores procede de un catálogo de Zenith y debe revisarse tras actualizar el juego. El script `scripts/exportar_iconos.py` permite regenerar el archivo local con los archivos `i18n_es.jar` y `gui.jar`; requiere Python con Pillow.
 

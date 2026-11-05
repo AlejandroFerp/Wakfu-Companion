@@ -1,0 +1,37 @@
+<!doctype html><meta charset="utf-8"><title>Prueba automática del turno del hipermago</title>
+<script>localStorage.removeItem('wakfu_fight_history');localStorage.removeItem('wakfu_live_combat_state');localStorage.removeItem('wakfu_class_tracker');</script>
+<iframe id="app" src="../public/index.html" width="1000" height="700"></iframe><p id="result">Comprobando...</p>
+<script>
+document.getElementById('app').onload=async()=>{
+  const app=document.getElementById('app').contentWindow,result=document.getElementById('result');
+  try {
+    app.saveFileHandleToDB=async()=>{};
+    let content='';
+    const handle={name:'wakfu_chat.log',async getFile(){return new File([content],'wakfu_chat.log');}};
+    const event=new app.Event('drop',{bubbles:true,cancelable:true});
+    Object.defineProperty(event,'dataTransfer',{value:{items:[{kind:'file',async getAsFileSystemHandle(){return handle;}}]}});
+    app.document.getElementById('drop-zone').dispatchEvent(event);
+    await new Promise(r=>setTimeout(r,200));
+    app.detectClass('Jugador', 'Orbes Relucientes');
+    const append=async(text)=>{content+=`12:00:01,000 - [Información (combate)] ${text}\n`;await app.parseFile();};
+    const panel=()=>app.document.getElementById('hyper-observations').textContent;
+    if(app.document.getElementById('hyper-start-turn')) throw Error('El botón manual sigue visible');
+    await append('85 segundos devueltos para el siguiente turno.');
+    await append('Jugador: -2 PM');
+    await append('Jugador: Abundancia (+10 niv.) (Efecto de otro personaje)');
+    if(!panel().includes('Próximo ciclo estimado: —')) throw Error('Un efecto recibido inició el turno');
+    await append('Jugador lanza el hechizo Ciclo Elemental.');
+    if(!panel().includes('Próximo ciclo estimado: 50 BC')) throw Error('El primer hechizo no inició el turno ni contó el ciclo');
+    await append('0 segundos devueltos para el siguiente turno.');
+    if(!panel().includes('Próximo ciclo estimado: —')) throw Error('El fin de turno no borró el coste anterior');
+    await append('Otro lanza el hechizo Vaporizar.');
+    await append('Jugador: -30 PdV (agua)');
+    if(!panel().includes('Próximo ciclo estimado: —')) throw Error('Un efecto de otro turno se atribuyó al jugador');
+    await append('62 segundos devueltos para el siguiente turno.');
+    await append('Jugador lanza el hechizo Ciclo Elemental.');
+    if(!panel().includes('Próximo ciclo estimado: 50 BC')) throw Error('No se detectó el turno siguiente');
+    if(panel().includes('Espalda')) throw Error('Sigue visible el indicador de espalda');
+    result.textContent='PRUEBA CORRECTA';
+  }catch(error){result.textContent='PRUEBA FALLIDA: '+error.message;}
+};
+</script>

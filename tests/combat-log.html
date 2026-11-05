@@ -47,7 +47,7 @@ document.getElementById('app').onload = async () => {
     if (!app.document.querySelector('.class-rune.is-last.is-active')?.textContent.includes('Fuego')) throw Error('Última runa de fuego no marcada');
     if (!rows[1].textContent.includes('-1.234 PdV')) throw Error('Texto original perdido');
     if (!rows[0].querySelector('[aria-label="Crítico"]')) throw Error('Falta el indicador de crítico');
-    if (!rows[4].querySelector('[aria-label="Espalda"]')) throw Error('Falta el indicador de espalda');
+    if (rows[4].querySelector('[aria-label="Espalda"]')) throw Error('No se retiró el indicador de espalda');
     const uploader = app.document.getElementById('combat-spell-import');
     const transfer = new app.DataTransfer();
     transfer.items.add(new app.File([JSON.stringify({version: 1, hechizos: {'Piratería': 'Descripción de prueba'}})], 'hechizos.json', {type: 'application/json'}));
