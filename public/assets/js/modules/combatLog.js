@@ -158,15 +158,39 @@ function updateCombatLogFilters() {
   }
 }
 
+let combatLogBatch = null;
+
+function beginCombatLogBatch() {
+  if (!combatLogList || combatLogBatch) return;
+  combatLogBatch = {
+    atBottom: combatLogList.scrollHeight - combatLogList.scrollTop - combatLogList.clientHeight < 40,
+    rows: [],
+    hyperDirty: false,
+  };
+}
+
+function endCombatLogBatch() {
+  if (!combatLogBatch) return;
+  const batch = combatLogBatch;
+  combatLogBatch = null;
+  const fragment = document.createDocumentFragment();
+  for (const row of batch.rows) fragment.appendChild(row);
+  combatLogList.appendChild(fragment);
+  while (combatLogList.children.length > MAX_COMBAT_LOG_EVENTS) combatLogList.firstElementChild.remove();
+  if (batch.atBottom && batch.rows.length) combatLogList.scrollTop = combatLogList.scrollHeight;
+  if (batch.hyperDirty) renderHyperObservations();
+}
+
 function appendCombatLog(line) {
   const match = line.match(/^(\d{2}:\d{2}:\d{2}),\d+\s+-\s+\[(?:Información \(combate\)|Information \(combat\)|Fight Log|Registro de lutas)\]\s*(.*)$/i);
   if (!match || !combatLogList) return;
   syncHypermageSelection();
   if (hyperCharacter && hyperCharacter.value.trim()) {
     hyperObserved = observeHypermageLine(hyperObserved, hyperCharacter.value.trim(), line);
-    renderHyperObservations();
+    if (combatLogBatch) combatLogBatch.hyperDirty = true;
+    else renderHyperObservations();
   }
-  const atBottom = combatLogList.scrollHeight - combatLogList.scrollTop - combatLogList.clientHeight < 40;
+  const atBottom = !combatLogBatch && combatLogList.scrollHeight - combatLogList.scrollTop - combatLogList.clientHeight < 40;
   const empty = combatLogList.querySelector(".empty-state");
   if (empty) empty.remove();
   const row = document.createElement("div");
@@ -192,12 +216,17 @@ function appendCombatLog(line) {
     row.appendChild(indicator);
   }
   row.appendChild(message);
-  combatLogList.appendChild(row);
   const selectedType = combatLogType.value;
   const query = combatLogSearch.value.toLocaleLowerCase("es").trim();
   row.hidden = (selectedType !== "all" && selectedType !== type) || !row.textContent.toLocaleLowerCase("es").includes(query);
-  while (combatLogList.children.length > MAX_COMBAT_LOG_EVENTS) combatLogList.firstElementChild.remove();
-  if (atBottom) combatLogList.scrollTop = combatLogList.scrollHeight;
+  if (combatLogBatch) {
+    combatLogBatch.rows.push(row);
+    if (combatLogBatch.rows.length > MAX_COMBAT_LOG_EVENTS) combatLogBatch.rows.shift();
+  } else {
+    combatLogList.appendChild(row);
+    while (combatLogList.children.length > MAX_COMBAT_LOG_EVENTS) combatLogList.firstElementChild.remove();
+    if (atBottom) combatLogList.scrollTop = combatLogList.scrollHeight;
+  }
 }
 
 if (combatLogClear) combatLogClear.addEventListener("click", () => {

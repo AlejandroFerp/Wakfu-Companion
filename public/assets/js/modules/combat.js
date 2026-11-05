@@ -692,11 +692,16 @@ async function parseFile() {
       bytes.set(pendingLogBytes);
       bytes.set(incoming, pendingLogBytes.length);
       let start = 0;
-      for (let i = 0; i < bytes.length; i++) {
-        if (bytes[i] !== 10) continue;
-        const end = i > start && bytes[i - 1] === 13 ? i - 1 : i;
-        processLine(decodeLogLine(bytes.subarray(start, end)));
-        start = i + 1;
+      if (typeof beginCombatLogBatch === "function") beginCombatLogBatch();
+      try {
+        for (let i = 0; i < bytes.length; i++) {
+          if (bytes[i] !== 10) continue;
+          const end = i > start && bytes[i - 1] === 13 ? i - 1 : i;
+          processLine(decodeLogLine(bytes.subarray(start, end)));
+          start = i + 1;
+        }
+      } finally {
+        if (typeof endCombatLogBatch === "function") endCombatLogBatch();
       }
       pendingLogBytes = bytes.slice(start);
 

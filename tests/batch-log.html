@@ -1,0 +1,27 @@
+<!doctype html><meta charset="utf-8"><title>Prueba de lectura por lotes</title>
+<script>localStorage.removeItem('wakfu_fight_history');localStorage.removeItem('wakfu_live_combat_state');localStorage.removeItem('wakfu_overrides');</script>
+<iframe id="app" src="../public/index.html" width="1000" height="600"></iframe><p id="result">Comprobando...</p>
+<script>
+document.getElementById('app').onload=async()=>{
+  const app=document.getElementById('app').contentWindow,result=document.getElementById('result');
+  try{
+    app.saveFileHandleToDB=async()=>{};let content='';
+    const handle={name:'wakfu_chat.log',async getFile(){return new File([content],'wakfu_chat.log');}};
+    const drop=new app.Event('drop',{bubbles:true,cancelable:true});
+    Object.defineProperty(drop,'dataTransfer',{value:{items:[{kind:'file',async getAsFileSystemHandle(){return handle;}}]}});
+    app.document.getElementById('drop-zone').dispatchEvent(drop);await new Promise(r=>setTimeout(r,200));
+    content='12:00:00,000 - [Información (combate)] Jugador lanza el hechizo Piratería.\n'+Array.from({length:60},(_,i)=>`12:00:01,000 - [Información (combate)] Objetivo: -${i+1} PdV (agua)\n`).join('');
+    await app.parseFile();
+    const d=app.document,list=d.getElementById('combat-log-list');
+    if(list.scrollHeight<=list.clientHeight) throw Error('El registro no permite comprobar el desplazamiento');
+    list.scrollTop=0;
+    const filter=d.getElementById('combat-log-type');filter.value='damage';filter.dispatchEvent(new app.Event('change'));
+    content+='12:00:02,000 - [Información (combate)] Jugador lanza el hechizo Piratería.\n12:00:03,000 - [Información (combate)] Objetivo: -99 PdV (agua)\n';
+    await app.parseFile();
+    const rows=[...list.querySelectorAll('.combat-log-event')],last=rows.slice(-2);
+    if(list.scrollTop!==0) throw Error('La lectura desplazó el registro que se estaba consultando');
+    if(last[0].dataset.type!=='cast' || !last[0].hidden || last[1].dataset.type!=='damage' || last[1].hidden || !last[1].textContent.includes('-99')) throw Error('Se alteró el orden o el filtro de eventos nuevos');
+    result.textContent='PRUEBA CORRECTA';
+  }catch(error){result.textContent='PRUEBA FALLIDA: '+error.message;}
+};
+</script>
