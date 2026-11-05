@@ -48,7 +48,7 @@ document.getElementById('app').onload = async () => {
     const rows = [...list.querySelectorAll('.combat-log-event')];
     if (rows.length !== 15 || rows.map(x => x.dataset.type).join(',') !== 'cast,damage,resource,state,damage,summon,movement,state,state,resource,other,cast,state,other,state') throw Error('Eventos o categorías incorrectos');
     if (app.document.getElementById('hyper-start-turn') || app.document.querySelector('#hyper-observations .class-note') || /espalda/i.test(app.document.getElementById('hyper-observations').textContent)) throw Error('La tarjeta muestra elementos retirados');
-    if (!app.document.getElementById('class-tracker-content').classList.contains('is-turn-estimated') || app.document.querySelector('[aria-label^="Turno estimado por registro"]')) throw Error('Indicador de turno incorrecto');
+    if (app.document.getElementById('class-tracker-content').classList.contains('is-turn-estimated') || app.document.querySelector('[aria-label^="Turno estimado por registro"]')) throw Error('Indicador de turno incorrecto');
     if (!app.document.querySelector('[aria-label="Abundancia: 60"]')) throw Error('Observación de abundancia incorrecta');
     if (!app.document.querySelector('[aria-label="Próximo Ciclo Elemental, coste estimado en BC: 50"]')) throw Error('Coste de ciclo incorrecto');
     if (!app.document.querySelector('[aria-label^="Luminiscencia: observado este turno"]')) throw Error('Luminiscencia no detectada');

@@ -3411,3 +3411,8 @@ body.pip-window .empty-state {
 .class-tracker-content.is-configuring .class-tracker-controls { display: flex; clear: both; padding: 4px 0; }
 .class-tracker-content .class-runes { margin: 3px 0 5px; }
 .pip-window .class-tracker-content { width: 100%; box-sizing: border-box; min-height: 100%; overflow: auto; }
+
+/* Minimal backing around the combat indicators. */
+.class-tracker { background: transparent; border-color: transparent; min-height: 125px; }
+.class-tracker-content { background: transparent; padding: 3px 4px; }
+.pip-window .class-tracker-content { background: transparent; }

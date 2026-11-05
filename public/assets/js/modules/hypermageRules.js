@@ -1,6 +1,6 @@
 // Evidence-based observations from Spanish combat logs, scoped by character.
 function createHypermageObservations() {
-  return { abundance: null, breeze: null, lastGeneratedRune: null, runes: { fire: null, water: null, air: null, earth: null }, lastBCChange: null, lastElementalCycle: null, cycleUses: null, turn: 0, turnBoundaryPending: false, estimatedTurn: false, bcFullSignal: false, effects: {}, lastEffectTarget: null, effectSerial: 0 };
+  return { abundance: null, breeze: null, lastGeneratedRune: null, runes: { fire: null, water: null, air: null, earth: null }, lastBCChange: null, lastElementalCycle: null, cycleUses: null, lastCycleMillis: null, turn: 0, turnBoundaryPending: false, estimatedTurn: false, bcFullSignal: false, effects: {}, lastEffectTarget: null, effectSerial: 0 };
 }
 
 function hyperRuneElement(name) {
@@ -9,7 +9,7 @@ function hyperRuneElement(name) {
 
 // The log does not identify the next actor: a cast after the boundary is only an estimate.
 function startHypermageTurn(previous) {
-  return { ...previous, cycleUses: 0, turn: previous.turn + 1, estimatedTurn: true };
+  return { ...previous, cycleUses: 0, lastCycleMillis: null, turn: previous.turn + 1, estimatedTurn: true };
 }
 
 function nextCycleCost(state) {
@@ -66,6 +66,12 @@ function observeHypermageLine(previous, character, line) {
     return next;
   }
   if (content === `${character} lanza el hechizo Ciclo Elemental.` || content.startsWith(`${character} lanza el hechizo Ciclo Elemental. (`)) {
+    const time = line.match(/^(\d{2}):(\d{2}):(\d{2}),(\d{3})/);
+    const millis = time ? (((Number(time[1]) * 60 + Number(time[2])) * 60 + Number(time[3])) * 1000 + Number(time[4])) : null;
+    // Multiple Wakfu clients may emit the same cast a few milliseconds apart.
+    const delta = millis === null || previous.lastCycleMillis === null ? null : (millis - previous.lastCycleMillis + 86400000) % 86400000;
+    if (delta !== null && delta <= 200) return next;
+    next.lastCycleMillis = millis;
     next.lastElementalCycle = match[0].slice(0, 8);
     if (next.cycleUses !== null) {
       if (next.cycleUses > 0) next.bcFullSignal = false;

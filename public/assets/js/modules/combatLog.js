@@ -44,8 +44,8 @@ function renderHyperObservations() {
   hyperPanel.replaceChildren();
   const card = classTrackerContent;
   if (card) {
-    card.classList.toggle("is-turn-estimated", Boolean(hyperObserved.estimatedTurn));
-    card.title = hyperObserved.estimatedTurn ? "Turno estimado por el registro, aún sin confirmación visual" : "Turno sin confirmar visualmente";
+    card.classList.remove("is-turn-estimated");
+    card.title = "Turno sin confirmar visualmente";
   }
   const add = (parent, tag, className, text) => { const el = document.createElement(tag); el.className = className; if (text !== undefined) el.textContent = text; parent.appendChild(el); return el; };
   const runes = add(hyperPanel, "div", "class-runes");

@@ -23,9 +23,11 @@ state = observeHypermageLine(state, 'Bucrota', line('Bucrota: Brisa Cuadramental
 assert.equal(state.breeze, 500);
 assert.equal(nextCycleCost(state), null);
 state = startHypermageTurn(state);
-for (const cost of [0, 50, 100, 150, 200]) {
+for (const [i, cost] of [0, 50, 100, 150, 200].entries()) {
   assert.equal(nextCycleCost(state), cost);
-  state = observeHypermageLine(state, 'Bucrota', line('Bucrota lanza el hechizo Ciclo Elemental.'));
+  state = observeHypermageLine(state, 'Bucrota', `20:25:${String(26+i*2).padStart(2,'0')},508 - [Información (combate)] Bucrota lanza el hechizo Ciclo Elemental.`);
+  state = observeHypermageLine(state, 'Bucrota', `20:25:${String(26+i*2).padStart(2,'0')},565 - [Información (combate)] Bucrota lanza el hechizo Ciclo Elemental.`);
+  assert.equal(nextCycleCost(state), i === 4 ? 'agotado' : cost + 50);
 }
 assert.equal(nextCycleCost(state), 'agotado');
 state = startHypermageTurn(state);

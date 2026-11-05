@@ -172,8 +172,8 @@ async function togglePiP(elementId, title) {
 
   try {
     pipWindow = await window.documentPictureInPicture.requestWindow({
-      width: elementId === "class-tracker-content" ? 250 : elementId === "chat-list" ? 400 : 450,
-      height: elementId === "class-tracker-content" ? 135 : 500,
+      width: elementId === "class-tracker-content" ? 225 : elementId === "chat-list" ? 400 : 450,
+      height: elementId === "class-tracker-content" ? 115 : 500,
     });
 
     // --- FUNCTION BRIDGING ---
@@ -217,7 +217,7 @@ async function togglePiP(elementId, title) {
     });
 
     // Set PiP Body Styles
-    pipWindow.document.body.style.background = "#121212";
+    pipWindow.document.body.style.background = elementId === "class-tracker-content" ? "transparent" : "#121212";
     pipWindow.document.body.style.display = "flex";
     pipWindow.document.body.style.flexDirection = "column";
     pipWindow.document.body.style.margin = "0";
