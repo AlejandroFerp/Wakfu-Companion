@@ -242,9 +242,26 @@ function endCombatLogBatch() {
   if (typeof renderSelotropObservations === "function") renderSelotropObservations();
 }
 
+// Duplicate cast lines can be emitted by multiple game clients within milliseconds.
+// Only collapse identical casts in this short window; other events remain untouched.
+const recentCombatCasts = new Map();
+function isDuplicateCombatCast(line, message) {
+  if (classifyCombatEvent(message) !== "cast") return false;
+  const stamp = line.match(/^(\d{2}):(\d{2}):(\d{2}),(\d{3})/);
+  if (!stamp) return false;
+  const ms = (((Number(stamp[1]) * 60 + Number(stamp[2])) * 60 + Number(stamp[3])) * 1000 + Number(stamp[4]));
+  const previous = recentCombatCasts.get(message);
+  if (previous !== undefined && (ms - previous + 86400000) % 86400000 <= 200) return true;
+  recentCombatCasts.delete(message);
+  recentCombatCasts.set(message, ms);
+  if (recentCombatCasts.size > 256) recentCombatCasts.delete(recentCombatCasts.keys().next().value);
+  return false;
+}
+
 function appendCombatLog(line) {
   const match = line.match(/^(\d{2}:\d{2}:\d{2}),\d+\s+-\s+\[(?:Información \(combate\)|Information \(combat\)|Fight Log|Registro de lutas)\]\s*(.*)$/i);
   if (!match || !combatLogList) return;
+  if (isDuplicateCombatCast(line, match[2])) return;
   syncHypermageSelection();
   if (typeof observeSelotropLog === "function") observeSelotropLog(line, Boolean(combatLogBatch));
   if (hyperCharacter && hyperCharacter.value.trim()) {
@@ -293,6 +310,7 @@ function appendCombatLog(line) {
 
 if (combatLogClear) combatLogClear.addEventListener("click", () => {
   combatLogList.replaceChildren();
+  recentCombatCasts.clear();
 });
 if (combatLogType) combatLogType.addEventListener("change", updateCombatLogFilters);
 if (combatLogSearch) combatLogSearch.addEventListener("input", updateCombatLogFilters);

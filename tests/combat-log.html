@@ -78,6 +78,14 @@ document.getElementById('app').onload = async () => {
     if (spanish !== 'Información') throw Error('Codificación Windows-1252 incorrecta');
     const utf8 = app.decodeLogLine(new TextEncoder().encode('Información'));
     if (utf8 !== 'Información') throw Error('Codificación UTF-8 incorrecta');
+    const beforeCasts = list.querySelectorAll('.combat-log-event').length;
+    app.beginCombatLogBatch();
+    app.appendCombatLog('20:51:28,000 - [Información (combate)] Ejemplo lanza el hechizo Ciclo Elemental.');
+    app.appendCombatLog('20:51:28,080 - [Información (combate)] Ejemplo lanza el hechizo Ciclo Elemental.');
+    app.endCombatLogBatch();
+    app.appendCombatLog('20:51:30,000 - [Información (combate)] Ejemplo lanza el hechizo Ciclo Elemental.');
+    app.appendCombatLog('20:51:30,080 - [Información (combate)] Otro lanza el hechizo Ciclo Elemental.');
+    if (list.querySelectorAll('.combat-log-event').length !== beforeCasts + 3) throw Error('No se filtró correctamente el lanzamiento duplicado');
     result.textContent = 'PRUEBA CORRECTA';
   } catch (error) { result.textContent = 'PRUEBA FALLIDA: ' + error.message; }
 };
