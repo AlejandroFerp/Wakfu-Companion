@@ -4,3 +4,9 @@ Screenshots/
 *.local.json
 __pycache__/
 
+
+# Artefactos locales del prototipo de escritorio
+*.exe
+desktop-assets.zip
+desktop-run.log
+ocr-probe.ps1

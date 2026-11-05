@@ -1,3 +1,17 @@
+# Wakfu Companion — fork en español
+
+Este repositorio es un fork de [Nexus-Hub/Wakfu-Companion](https://github.com/Nexus-Hub/Wakfu-Companion), adaptado progresivamente a registros de combate en español. El proyecto original se describe más abajo; algunas funciones de esa descripción no están visibles en este fork.
+
+- **Web:** [Abrir Wakfu Companion](https://alejandroferp.github.io/Wakfu-Companion/).
+- **Windows:** [Descargar la última versión de escritorio](https://github.com/AlejandroFerp/Wakfu-Companion/releases/latest). El prototipo usa Go y abre la interfaz en una ventana de Microsoft Edge.
+- **Uso:** con el juego abierto, selecciona `wakfu_chat.log` desde `%AppData%\zaap\gamesLogs\wakfu\logs\`. La aplicación de escritorio busca ese archivo automáticamente y procesa los eventos posteriores a la conexión. Para cerrarla, pulsa «Salir de la aplicación».
+- **Incluye:** medidor de combate, registro cronológico en español y seguimiento experimental de hipermago y selotrop. Los iconos y descripciones adicionales se importan mediante JSON exportados desde la instalación local del juego.
+- **Limitaciones:** la atribución de eventos y el turno pueden ser inciertos; el OCR aún no está integrado. Portal Celestial no cuenta automáticamente dos finales de turno hasta disponer de una señal que identifique al personaje. La ventana flotante depende del navegador y no se ha validado en todos los modos de pantalla del juego.
+- **Privacidad:** no incluyas tus registros, archivos de datos exportados ni información de tu cuenta en commits. Los archivos de registro pueden contener conversaciones y nombres.
+- **Desarrollo:** consulta [README_ESCRITORIO.md](README_ESCRITORIO.md), [COMO_USAR_REGISTRO.md](COMO_USAR_REGISTRO.md) y [PLAN_REGISTRO_COMBATE.md](PLAN_REGISTRO_COMBATE.md).
+
+---
+
 # Nexus Wakfu Companion
 
 **Live Tool:** [https://wakfu-companion.nexuswow.workers.dev/](https://wakfu-companion.nexuswow.workers.dev/)
