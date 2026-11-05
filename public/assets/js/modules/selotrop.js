@@ -89,6 +89,15 @@ function updateClassTrackerSelection() {
   if (!selotropPanel.hidden) syncSelotropSelection();
 }
 
-if (classSelector) classSelector.addEventListener("change", updateClassTrackerSelection);
+if (classSelector) {
+  try {
+    const savedClass = localStorage.getItem("wakfu_class_tracker");
+    if (["huppermage", "eliotrope"].includes(savedClass)) classSelector.value = savedClass;
+  } catch (_) {}
+  classSelector.addEventListener("change", () => {
+    try { localStorage.setItem("wakfu_class_tracker", classSelector.value); } catch (_) {}
+    updateClassTrackerSelection();
+  });
+}
 if (selotropCharacter) selotropCharacter.addEventListener("change", renderSelotropObservations);
 updateClassTrackerSelection();
