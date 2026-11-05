@@ -1,15 +1,15 @@
 // Evidence-based observations from Spanish combat logs, scoped by character.
 function createHypermageObservations() {
-  return { abundance: null, breeze: null, lastGeneratedRune: null, runes: { fire: null, water: null, air: null, earth: null }, lastBCChange: null, lastElementalCycle: null, cycleUses: null, turn: 0, bcFullSignal: false, lastDamageBack: null, effects: {} };
+  return { abundance: null, breeze: null, lastGeneratedRune: null, runes: { fire: null, water: null, air: null, earth: null }, lastBCChange: null, lastElementalCycle: null, cycleUses: null, turn: 0, turnBoundaryPending: false, estimatedTurn: false, bcFullSignal: false, lastDamageBack: null, effects: {} };
 }
 
 function hyperRuneElement(name) {
   return ({ "incan'runa": "fire", "acua'runa": "water", "aer'runa": "air", "telu'runa": "earth" })[name.toLocaleLowerCase("es")] || null;
 }
 
-// Only the user can assert their turn until the log provides a reliable signal.
+// The log does not identify the next actor: a cast after the boundary is only an estimate.
 function startHypermageTurn(previous) {
-  return { ...previous, cycleUses: 0, turn: previous.turn + 1 };
+  return { ...previous, cycleUses: 0, turn: previous.turn + 1, estimatedTurn: true };
 }
 
 function nextCycleCost(state) {
@@ -22,8 +22,21 @@ function observeHypermageLine(previous, character, line) {
   const match = line.match(/^\d{2}:\d{2}:\d{2},\d+\s+-\s+\[Información \(combate\)\]\s*(.*)$/i);
   if (!match) return next;
   const content = match[1];
+  if (/^\d+ segundos devueltos para el siguiente turno\.$/i.test(content)) {
+    next.cycleUses = null;
+    next.estimatedTurn = false;
+    next.turnBoundaryPending = true;
+    return next;
+  }
+  const cast = content.match(/^(.+?) lanza el hechizo .+\.(?: \(.*\))?$/i);
+  if (next.turnBoundaryPending && cast) {
+    next.turnBoundaryPending = false;
+    if (cast[1] === character) Object.assign(next, startHypermageTurn(next));
+  }
   if (/^Combate terminado\b/i.test(content)) {
     next.cycleUses = null;
+    next.turnBoundaryPending = false;
+    next.estimatedTurn = false;
     next.effects = {};
     next.bcFullSignal = false;
     next.lastDamageBack = null;

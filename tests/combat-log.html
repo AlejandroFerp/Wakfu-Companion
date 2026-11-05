@@ -18,7 +18,6 @@ document.getElementById('app').onload = async () => {
     if (hyper.value !== 'HipermagoEjemplo' || !app.document.getElementById('hyper-choice-label').hidden) throw Error('No se detectó el hipermago automáticamente');
     app.detectClass('Segundo', 'Orbes Relucientes');
     if (hyper.value !== 'HipermagoEjemplo' || app.document.getElementById('hyper-choice-label').hidden) throw Error('Selección de varios hipermagos incorrecta');
-    app.document.getElementById('hyper-start-turn').click();
     content = [
       '12:00:00,000 - [Información (combate)] Personaje lanza el hechizo Piratería. (Crítico)',
       '12:00:01,000 - [Información (combate)] Objetivo: -1.234 PdV (fuego)',
@@ -30,6 +29,7 @@ document.getElementById('app').onload = async () => {
       '12:00:03,800 - [Información (combate)] HipermagoEjemplo: Abundancia (+50 niv.) (Plenitud)',
       '12:00:03,900 - [Información (combate)] HipermagoEjemplo: Abundancia (+60 niv.) (Runa consumida)',
       '12:00:03,950 - [Información (combate)] HipermagoEjemplo: 25 BC (Runa generada)',
+      '12:00:03,955 - [Información (combate)] 67 segundos devueltos para el siguiente turno.',
       '12:00:03,960 - [Información (combate)] HipermagoEjemplo lanza el hechizo Ciclo Elemental.',
       '12:00:03,970 - [Información (combate)] Objetivo: Luminiscencia (Niv. 1) (Runas consumidas)',
       "12:00:03,980 - [Información (combate)] [HipermagoEjemplo] Fuego fatuo: Guardado Incan'runa",
@@ -40,10 +40,10 @@ document.getElementById('app').onload = async () => {
     await app.parseFile();
     const list = app.document.getElementById('combat-log-list');
     const rows = [...list.querySelectorAll('.combat-log-event')];
-    if (rows.length !== 14 || rows.map(x => x.dataset.type).join(',') !== 'cast,damage,resource,state,damage,summon,movement,state,state,resource,cast,state,other,state') throw Error('Eventos o categorías incorrectos');
+    if (rows.length !== 15 || rows.map(x => x.dataset.type).join(',') !== 'cast,damage,resource,state,damage,summon,movement,state,state,resource,other,cast,state,other,state') throw Error('Eventos o categorías incorrectos');
     if (!app.document.getElementById('hyper-observations').textContent.includes('Abundancia: 60')) throw Error('Observación de abundancia incorrecta');
-    if (!app.document.getElementById('hyper-observations').textContent.includes('Próximo ciclo: 50 BC')) throw Error('Coste de ciclo incorrecto');
-    if (!app.document.getElementById('hyper-observations').textContent.includes('Luminiscencia: observado este turno')) throw Error('Luminiscencia no detectada');
+    if (!app.document.getElementById('hyper-observations').textContent.includes('Próximo ciclo estimado: 50 BC')) throw Error('Coste de ciclo incorrecto');
+    if (!app.document.getElementById('hyper-observations').textContent.includes('Luminiscencia: observado desde el turno estimado')) throw Error('Luminiscencia no detectada');
     if (!app.document.querySelector('.class-rune.is-last.is-active')?.textContent.includes('Fuego')) throw Error('Última runa de fuego no marcada');
     if (!rows[1].textContent.includes('-1.234 PdV')) throw Error('Texto original perdido');
     if (!rows[0].querySelector('[aria-label="Crítico"]')) throw Error('Falta el indicador de crítico');
@@ -62,10 +62,10 @@ document.getElementById('app').onload = async () => {
     filter.value = 'all'; filter.dispatchEvent(new app.Event('change'));
     content += '12:00:05,000 - [Información (combate)] Personaje lanza el hechizo Incom';
     await app.parseFile();
-    if (list.querySelectorAll('.combat-log-event').length !== 14) throw Error('Se mostró una línea incompleta');
+    if (list.querySelectorAll('.combat-log-event').length !== 15) throw Error('Se mostró una línea incompleta');
     content += 'pleto.\n';
     await app.parseFile();
-    if (list.querySelectorAll('.combat-log-event').length !== 15 || !list.textContent.includes('Incompleto.')) throw Error('Línea dividida perdida');
+    if (list.querySelectorAll('.combat-log-event').length !== 16 || !list.textContent.includes('Incompleto.')) throw Error('Línea dividida perdida');
     const spanish = app.decodeLogLine(new Uint8Array([73, 110, 102, 111, 114, 109, 97, 99, 105, 243, 110]));
     if (spanish !== 'Información') throw Error('Codificación Windows-1252 incorrecta');
     const utf8 = app.decodeLogLine(new TextEncoder().encode('Información'));

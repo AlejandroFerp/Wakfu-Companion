@@ -12,7 +12,6 @@ const hyperCharacter = document.getElementById("hyper-character");
 const hyperPanel = document.getElementById("hyper-observations");
 const hyperChoiceLabel = document.getElementById("hyper-choice-label");
 const hyperDetected = document.getElementById("hyper-detected");
-const hyperStartTurn = document.getElementById("hyper-start-turn");
 const hyperTarget = document.getElementById("hyper-target");
 let hyperObserved = createHypermageObservations();
 
@@ -46,7 +45,7 @@ function renderHyperObservations() {
   const metric = (label, value) => { const box = add(metrics, "div", "class-metric"); add(box, "span", "class-metric-label", `${label}: `); add(box, "strong", "class-metric-value", value); };
   metric("Abundancia", hyperObserved.abundance === null ? "—" : `${hyperObserved.abundance}/100`);
   const cost = nextCycleCost(hyperObserved);
-  metric("Próximo ciclo", cost === null ? "—" : cost === "agotado" ? "Sin usos" : `${cost} BC`);
+  metric("Próximo ciclo estimado", cost === null ? "—" : cost === "agotado" ? "Sin usos" : `${cost} BC`);
   const indicators = add(hyperPanel, "div", "class-effects");
   const back = add(indicators, "span", `class-effect ${hyperObserved.lastDamageBack === true ? "is-active" : "is-unknown"}`);
   add(back, "span", "class-effect-icon", "↶");
@@ -55,22 +54,17 @@ function renderHyperObservations() {
   const observed = hyperObserved.effects[hyperTarget.value] || {};
   for (const [key, label] of [["debilidad", "Debilidad"], ["luminiscencia", "Luminiscencia"]]) {
     const item = observed[key];
-    const recent = item && item.active && item.turn > 0 && item.turn === hyperObserved.turn;
+    const recent = item && item.active && item.turn > 0 && item.turn === hyperObserved.turn && hyperObserved.estimatedTurn;
     const inactive = item && item.active === false;
-    const status = inactive ? "retirado" : recent ? "observado este turno" : item ? "duración por comprobar" : "sin información";
+    const status = inactive ? "retirado" : recent ? "observado desde el turno estimado" : item ? "duración por comprobar" : "sin información";
     const badge = add(indicators, "span", `class-effect ${recent ? "is-active" : inactive ? "" : "is-unknown"}`);
     add(badge, "span", "class-effect-icon", key === "debilidad" ? "✦" : "☼");
     add(badge, "span", "", `${label}: ${status}`);
     badge.title = "Estado observado en el registro; el autor no está confirmado.";
   }
-  add(hyperPanel, "p", "class-note", `${last ? "Borde dorado: última runa guardada observada. " : ""}${hyperObserved.bcFullSignal ? "Última señal: BC lleno. " : ""}${cost === null ? "Marca el inicio de tu turno para calcular Ciclo Elemental." : cost === "agotado" ? "Has usado los cinco lanzamientos registrados." : `${hyperObserved.cycleUses}/5 lanzamientos registrados.`}`);
+  add(hyperPanel, "p", "class-note", `${last ? "Borde dorado: última runa guardada observada. " : ""}${hyperObserved.bcFullSignal ? "Última señal: BC lleno. " : ""}${cost === null ? "Esperando un posible turno del personaje; el registro no identifica el turno con certeza." : cost === "agotado" ? "Turno estimado: cinco lanzamientos registrados. Puede haber acciones fuera de turno." : `Turno estimado por el primer hechizo tras un cambio de turno: ${hyperObserved.cycleUses}/5 lanzamientos registrados. Puede haber acciones fuera de turno.`}`);
 }
 if (hyperTarget) hyperTarget.addEventListener("change", renderHyperObservations);
-if (hyperStartTurn) hyperStartTurn.addEventListener("click", () => {
-  if (!hyperCharacter.value.trim()) return;
-  hyperObserved = startHypermageTurn(hyperObserved);
-  renderHyperObservations();
-});
 if (hyperCharacter) hyperCharacter.addEventListener("change", () => {
   hyperObserved = createHypermageObservations();
   renderHyperObservations();
