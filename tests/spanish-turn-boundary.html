@@ -1,0 +1,28 @@
+<!doctype html><meta charset="utf-8"><title>Prueba de cambio de turno en español</title>
+<script>localStorage.removeItem('wakfu_fight_history');localStorage.removeItem('wakfu_live_combat_state');localStorage.removeItem('wakfu_overrides');</script>
+<iframe id="app" src="../public/index.html" width="1000" height="600"></iframe><p id="result">Comprobando...</p>
+<script>
+document.getElementById('app').onload=async()=>{
+  const app=document.getElementById('app').contentWindow,result=document.getElementById('result');
+  try {
+    app.saveFileHandleToDB=async()=>{};
+    let content='';
+    const handle={name:'wakfu_chat.log',async getFile(){return new File([content],'wakfu_chat.log');}};
+    const event=new app.Event('drop',{bubbles:true,cancelable:true});
+    Object.defineProperty(event,'dataTransfer',{value:{items:[{kind:'file',async getAsFileSystemHandle(){return handle;}}]}});
+    app.document.getElementById('drop-zone').dispatchEvent(event);await new Promise(r=>setTimeout(r,200));
+    content=[
+      '12:00:01,000 - [Información (combate)] Jugador lanza el hechizo Piratería.',
+      '12:00:02,000 - [Información (combate)] Objetivo: -50 PdV (agua)',
+      '12:00:03,000 - [Información (combate)] 67 segundos devueltos para el siguiente turno.',
+      '12:00:04,000 - [Información (combate)] Jugador: -120 PdV (agua)',
+      ''
+    ].join('\n');
+    await app.parseFile();
+    const d=app.document, ally=d.getElementById('list-allies'), unknown=d.getElementById('list-unknown');
+    if(!ally.textContent.includes('50') || ally.textContent.includes('170')) throw Error('Se atribuyó el daño posterior al turno anterior');
+    if(!unknown.textContent.includes('Autor desconocido') || !unknown.textContent.includes('120')) throw Error('Falta el daño de autor desconocido');
+    result.textContent='PRUEBA CORRECTA';
+  } catch(error){result.textContent='PRUEBA FALLIDA: '+error.message;}
+};
+</script>

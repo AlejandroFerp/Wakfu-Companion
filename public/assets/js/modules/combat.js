@@ -29,7 +29,7 @@ function processFightLog(line) {
   if (affected) recordPersonalCombatEvent(affected[1].trim(), { type: "affected", message: affected[2].trim() });
 
   // 1. Turn/Time Carryover - RESET CASTER
-  if (content.includes("carried over") || content.includes("tour suivant")) {
+  if (content.includes("carried over") || content.includes("tour suivant") || /^\d+ segundos devueltos para el siguiente turno\.$/i.test(content)) {
     currentCaster = null;
     currentSpell = "Passive / Indirect";
     // Flush pending if any (assume Neutral if turn ended)
