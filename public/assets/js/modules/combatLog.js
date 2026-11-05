@@ -18,6 +18,7 @@ let hyperObserved = createHypermageObservations();
 function renderHyperObservations() {
   if (!hyperPanel) return;
   if (!hyperCharacter.value.trim()) {
+    document.getElementById("class-tracker-content")?.classList.remove("is-turn-estimated");
     hyperPanel.textContent = "Esperando a identificar un hipermago por sus hechizos.";
     return;
   }
@@ -35,6 +36,11 @@ function renderHyperObservations() {
     hyperTarget.dataset.effectSerial = String(hyperObserved.effectSerial);
   }
   hyperPanel.replaceChildren();
+  const card = document.getElementById("class-tracker-content");
+  if (card) {
+    card.classList.toggle("is-turn-estimated", Boolean(hyperObserved.estimatedTurn));
+    card.title = hyperObserved.estimatedTurn ? "Turno estimado por el registro, aún sin confirmación visual" : "Turno sin confirmar visualmente";
+  }
   const add = (parent, tag, className, text) => { const el = document.createElement(tag); el.className = className; if (text !== undefined) el.textContent = text; parent.appendChild(el); return el; };
   const runes = add(hyperPanel, "div", "class-runes");
   const last = hyperObserved.lastGeneratedRune && hyperRuneElement(hyperObserved.lastGeneratedRune);
@@ -52,7 +58,6 @@ function renderHyperObservations() {
     add(box, "span", "class-metric-icon", symbol).setAttribute("aria-hidden", "true");
     add(box, "strong", "class-metric-value", value);
   };
-  metric("◷", "Turno estimado por registro", hyperObserved.estimatedTurn ? "●" : "—");
   metric("✺", "Abundancia", hyperObserved.abundance === null ? "—" : `${hyperObserved.abundance}`);
   const cost = nextCycleCost(hyperObserved);
   metric("↻", "Próximo Ciclo Elemental, coste estimado en BC", cost === null ? "—" : cost === "agotado" ? "0/5" : `${cost}`);
