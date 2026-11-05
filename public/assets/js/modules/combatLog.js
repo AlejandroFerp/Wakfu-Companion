@@ -43,6 +43,7 @@ function renderHyperObservations() {
   }
   const metrics = add(hyperPanel, "div", "class-metrics");
   const metric = (label, value) => { const box = add(metrics, "div", "class-metric"); add(box, "span", "class-metric-label", `${label}: `); add(box, "strong", "class-metric-value", value); };
+  metric("Turno", hyperObserved.estimatedTurn ? "En curso (estimado)" : hyperObserved.turn > 0 ? "Finalizado" : "Sin detectar");
   metric("Abundancia", hyperObserved.abundance === null ? "—" : `${hyperObserved.abundance}/100`);
   const cost = nextCycleCost(hyperObserved);
   metric("Próximo ciclo estimado", cost === null ? "—" : cost === "agotado" ? "Sin usos" : `${cost} BC`);

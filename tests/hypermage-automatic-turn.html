@@ -22,8 +22,10 @@ document.getElementById('app').onload=async()=>{
     if(!panel().includes('Próximo ciclo estimado: —')) throw Error('Un efecto recibido inició el turno');
     await append('Jugador lanza el hechizo Ciclo Elemental.');
     if(!panel().includes('Próximo ciclo estimado: 50 BC')) throw Error('El primer hechizo no inició el turno ni contó el ciclo');
+    if(!panel().includes('Turno: En curso (estimado)')) throw Error('El inicio del turno no es visible');
     await append('0 segundos devueltos para el siguiente turno.');
     if(!panel().includes('Próximo ciclo estimado: —')) throw Error('El fin de turno no borró el coste anterior');
+    if(!panel().includes('Turno: Finalizado')) throw Error('El fin del turno no es visible');
     await append('Otro lanza el hechizo Vaporizar.');
     await append('Jugador: -30 PdV (agua)');
     if(!panel().includes('Próximo ciclo estimado: —')) throw Error('Un efecto de otro turno se atribuyó al jugador');
