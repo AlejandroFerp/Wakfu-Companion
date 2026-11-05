@@ -30,4 +30,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = 'desktop-' + $env:GITHUB_SHA.Substring(0, 12)
-          gh release create $tag WakfuCompanion.exe --title "Wakfu Companion escritorio $tag" --notes "Prototipo de Windows generado desde $env:GITHUB_SHA. Requiere Microsoft Edge."
+          gh release create $tag WakfuCompanion.exe --title "Wakfu Companion para Windows" --notes "Versión de escritorio para Windows; requiere Microsoft Edge. El OCR y la identificación visual de turnos aún no están integrados. Código: $env:GITHUB_SHA." --latest
+          if ($LASTEXITCODE -ne 0) { throw 'No se pudo publicar el ejecutable.' }
+          # Remove only the superseded prototype releases, preserving their tags.
+          foreach ($old in @('desktop-4f2b06947158', 'desktop-50dbc95790fa')) {
+            gh release view $old *> $null
+            if ($LASTEXITCODE -eq 0) {
+              gh release delete $old --yes
+              if ($LASTEXITCODE -ne 0) { throw "No se pudo retirar la publicación antigua $old." }
+            }
+          }
