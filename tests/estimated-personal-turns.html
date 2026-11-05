@@ -14,9 +14,12 @@ document.getElementById('app').onload = async () => {
       '12:00:00,000 - [Información (combate)] Alfa lanza el hechizo Piratería.',
       '12:00:01,000 - [Información (combate)] Objetivo: -100 PdV (fuego)',
       '12:00:02,000 - [Información (combate)] 30 segundos devueltos para el siguiente turno.',
+      '12:00:02,040 - [Información (combate)] 30 segundos devueltos para el siguiente turno.',
       '12:00:03,000 - [Información (combate)] Alfa lanza el hechizo Piratería.',
       '12:00:03,080 - [Información (combate)] Alfa lanza el hechizo Piratería.',
       '12:00:04,000 - [Información (combate)] Objetivo: -300 PdV (fuego)',
+      '12:00:04,200 - [Información (combate)] Aliado: +120 PdV (agua)',
+      '12:00:04,400 - [Información (combate)] Aliado: 75 Armadura',
       '12:00:05,000 - [Información (combate)] Beta lanza el hechizo Piratería.',
       '12:00:06,000 - [Información (combate)] Objetivo: -200 PdV (fuego)',
       '12:00:07,000 - [Información (combate)] 30 segundos devueltos para el siguiente turno.',
@@ -24,13 +27,19 @@ document.getElementById('app').onload = async () => {
       '12:00:09,000 - [Información (combate)] Objetivo: -400 PdV (fuego)',''].join('\n');
     await app.parseFile();app.saveLiveCombatState();
     const state=JSON.parse(app.localStorage.getItem('wakfu_live_combat_state'));
-    if(state.personalDamageByTurn.Alfa?.['1']!==300 || state.personalDamageByTurn.Beta?.['1']!==400) throw Error('El daño se asignó al turno equivocado');
-    if(state.personalTurnSources.Alfa?.['1']!=='estimated' || state.personalTurnSources.Beta?.['1']!=='estimated') throw Error('Falta distinguir la estimación');
+    if(state.personalDamageByTurn.Alfa?.['1']!==100 || state.personalDamageByTurn.Alfa?.['2']!==300 || state.personalDamageByTurn.Beta?.['1']!==400) throw Error('El daño se asignó al turno equivocado');
+    if(state.personalTurnSources.Alfa?.['2']!=='estimated' || state.personalTurnSources.Beta?.['1']!=='estimated') throw Error('Falta distinguir la estimación');
+    if(state.personalHealingByTurn.Alfa?.['2']!==120 || state.personalArmorByTurn.Alfa?.['2']!==75) throw Error('Faltan curas o armadura del turno');
     if(state.personalCombatEvents.Beta.filter(e=>e.type==='damage' && e.turn===null).length!==1) throw Error('Se perdió el daño sin turno');
     if(state.personalCombatEvents.Alfa.filter(e=>e.type==='cast').length!==2) throw Error('No se filtró el lanzamiento duplicado');
     const row=app.document.querySelector('.player-block[data-name="Alfa"] .player-row');if(!row)throw Error('No aparece el jugador');row.click();
     const block=app.document.querySelector('.player-block[data-name="Alfa"]');
-    if(!block.textContent.includes('Turno 1 (estimado): 300')) throw Error('Falta el desglose visible');
+    if(!block.textContent.includes('Turno 2 (estimado): 300 daño · 120 curas · 75 armadura')) throw Error('Falta el desglose visible');
+    app.performReset(); app.processLine('12:00:19,000 - [Información (combate)] Alfa: se desplaza 2 casillas'); app.processLine('12:00:20,000 - [Información (combate)] Alfa lanza el hechizo Piratería.'); app.processLine('12:00:21,000 - [Información (combate)] Objetivo: -50 PdV (fuego)'); app.saveLiveCombatState();
+    const history=JSON.parse(app.localStorage.getItem('wakfu_fight_history'));
+    if(history[0]?.personalHealingByTurn?.Alfa?.['2']!==120 || history[0]?.personalArmorByTurn?.Alfa?.['2']!==75) throw Error('No se guardaron los detalles en el historial');
+    const reset=JSON.parse(app.localStorage.getItem('wakfu_live_combat_state'));
+    if(reset.personalTurns.Alfa!==1 || reset.personalDamageByTurn.Alfa['1']!==50) throw Error('No se reiniciaron los turnos al cambiar de combate');
     result.textContent='PRUEBA CORRECTA';
   } catch(e) { result.textContent='PRUEBA FALLIDA: '+e.message; }
 };

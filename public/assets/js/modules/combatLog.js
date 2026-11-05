@@ -255,7 +255,7 @@ function isDuplicateCombatEvent(line, message) {
   if (elapsed !== null && elapsed <= 200) {
     if (!duplicateEvidence.some(item => item.message === message)) duplicateEvidence.push({message, ms});
     // Collapse only spell casts and the portal application; repeated damage can be real.
-    return classifyCombatEvent(message) === "cast" || /^.+?: Portal Celestial\s*\(Niv\.\s*\d+\)/i.test(message);
+    return classifyCombatEvent(message) === "cast" || /^\d+ segundos devueltos para el siguiente turno\.$/i.test(message) || /^.+?: Portal Celestial\s*\(Niv\.\s*\d+\)/i.test(message);
   }
   recentCombatMessages.delete(message);
   recentCombatMessages.set(message, ms);

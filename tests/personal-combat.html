@@ -20,7 +20,7 @@ document.getElementById('app').onload = async () => {
     if (!row) throw Error('No apareció el personaje');
     row.click();
     let block = app.document.querySelector('.player-block[data-name="Jugador"]');
-    if (!block.textContent.includes('Lanza Piratería') || !block.textContent.includes('Turno sin identificar')) throw Error('Falta el detalle personal');
+    if (!block.textContent.includes('Lanza Piratería') || !block.textContent.includes('Turno 1 (estimado)')) throw Error('Falta el detalle personal');
     block.querySelector('.personal-turn-button').click();
     content += '12:00:01,500 - [Información (combate)] Jugador lanza el hechizo Steamerator.\n';
     await app.parseFile();
@@ -29,19 +29,19 @@ document.getElementById('app').onload = async () => {
     content += '12:00:02,000 - [Información (combate)] Jugador lanza el hechizo Piratería.\n12:00:03,000 - [Información (combate)] Objetivo: -300 PdV (fuego)\n12:00:03,100 - [Información (combate)] Jugador: -2 PM\n';
     await app.parseFile();
     block = app.document.querySelector('.player-block[data-name="Jugador"]');
-    if (!block.textContent.includes('Daño medio por turno observado: 300') || !block.textContent.includes('Turno 1 (marcado)') || !block.textContent.includes('Evento sobre el personaje: -2 PM')) throw Error('El DPT, el turno o el efecto no son correctos');
+    if (!block.textContent.includes('Daño medio por turno observado: 200') || !block.textContent.includes('Turno 2 (marcado)') || !block.textContent.includes('Evento sobre el personaje: -2 PM')) throw Error('El DPT, el turno o el efecto no son correctos');
     block.querySelector('.personal-turn-button').click();
     content += '12:00:03,200 - [Información (combate)] Jugador lanza el hechizo Piratería.\n12:00:03,300 - [Información (combate)] Objetivo: -200 PdV (fuego)\n';
     await app.parseFile();
     block = app.document.querySelector('.player-block[data-name="Jugador"]');
-    if (!block.textContent.includes('Daño medio por turno observado: 250') || !block.textContent.includes('Turno 1 (marcado): 300') || !block.textContent.includes('Turno 2 (marcado): 200')) throw Error('Desglose por turno incorrecto');
+    if (!block.textContent.includes('Daño medio por turno observado: 200') || !block.textContent.includes('Turno 2 (marcado): 300') || !block.textContent.includes('Turno 3 (marcado): 200')) throw Error('Desglose por turno incorrecto');
     content += '12:00:04,000 - [Información (combate)] Combate terminado.\n';
     await app.parseFile();
     const history = JSON.parse(app.localStorage.getItem('wakfu_fight_history'));
-    if (history[0].personalTurnDamage.Jugador !== 500 || history[0].personalEvents.Jugador.length < 4) throw Error('No se guardó el detalle en el historial');
+    if (history[0].personalTurnDamage.Jugador !== 600 || history[0].personalEvents.Jugador.length < 4) throw Error('No se guardó el detalle en el historial');
     app.document.getElementById('btn-hist-0').click();
     const historical = app.document.querySelector('.player-block[data-name="Jugador"]');
-    if (!historical || !historical.textContent.includes('Daño medio por turno observado: 250') || !historical.textContent.includes('Turno 2 (marcado): 200') || !historical.textContent.includes('Lanza Piratería')) throw Error('El detalle histórico no se muestra');
+    if (!historical || !historical.textContent.includes('Daño medio por turno observado: 200') || !historical.textContent.includes('Turno 3 (marcado): 200') || !historical.textContent.includes('Lanza Piratería')) throw Error('El detalle histórico no se muestra');
     result.textContent='PRUEBA CORRECTA';
   } catch(error) {result.textContent='PRUEBA FALLIDA: '+error.message;}
 };

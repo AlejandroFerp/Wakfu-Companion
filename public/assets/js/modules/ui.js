@@ -248,9 +248,13 @@ function renderMeter() {
           const turnsSummary = document.createElement("div");
           const firstTurn = Math.max(1, turns - 19);
           const sources = currentViewIndex === "live" ? (personalTurnSources[p.name] || {}) : (fightHistory[currentViewIndex]?.personalTurnSources?.[p.name] || {});
+          const healsAvailable = currentViewIndex === "live" || Boolean(fightHistory[currentViewIndex]?.personalHealingByTurn);
+          const shieldsAvailable = currentViewIndex === "live" || Boolean(fightHistory[currentViewIndex]?.personalArmorByTurn);
+          const heals = currentViewIndex === "live" ? (personalHealingByTurn[p.name] || {}) : (fightHistory[currentViewIndex]?.personalHealingByTurn?.[p.name] || {});
+          const shields = currentViewIndex === "live" ? (personalArmorByTurn[p.name] || {}) : (fightHistory[currentViewIndex]?.personalArmorByTurn?.[p.name] || {});
           turnsSummary.textContent = Array.from({ length: turns - firstTurn + 1 }, (_, i) => {
             const number = firstTurn + i;
-            return `Turno ${number} (${sources[number] === "estimated" ? "estimado" : "marcado"}): ${typeof totals[number] === "number" ? totals[number].toLocaleString() : "sin datos"}`;
+            return `Turno ${number} (${sources[number] === "estimated" ? "estimado" : "marcado"}): ${typeof totals[number] === "number" ? totals[number].toLocaleString() : "sin datos"} daño · ${healsAvailable ? (heals[number] || 0).toLocaleString() : "—"} curas · ${shieldsAvailable ? (shields[number] || 0).toLocaleString() : "—"} armadura`;
           }).join(" · ");
           detail.appendChild(turnsSummary);
         }
@@ -260,7 +264,7 @@ function renderMeter() {
         for (const event of events) {
           const entry = document.createElement("div");
           const turn = event.turn ? `Turno ${event.turn} (${event.turnSource === "estimated" ? "estimado" : "marcado"})` : "Turno sin identificar";
-          const description = event.type === "cast" ? `Lanza ${event.spell}` : event.type === "damage" ? `${event.spell}: ${event.amount.toLocaleString()} de daño atribuido` : event.type === "affected" ? `Evento sobre el personaje: ${event.message}` : event.turnSource === "estimated" ? "Inicio de turno estimado" : "Inicio de turno marcado";
+          const description = event.type === "cast" ? `Lanza ${event.spell}` : event.type === "damage" ? `${event.spell}: ${event.amount.toLocaleString()} de daño atribuido` : event.type === "heal" ? `${event.spell}: ${event.amount.toLocaleString()} de curas atribuidas` : event.type === "armor" ? `${event.spell}: ${event.amount.toLocaleString()} de armadura atribuida` : event.type === "affected" ? `Evento sobre el personaje: ${event.message}` : event.turnSource === "estimated" ? "Inicio de turno estimado" : "Inicio de turno marcado";
           const abilityIcon = event.spell && typeof getCombatSpellIcon === "function" ? getCombatSpellIcon(event.spell) : null;
           if (abilityIcon) {
             const icon = document.createElement("img");

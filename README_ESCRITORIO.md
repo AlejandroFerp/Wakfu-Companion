@@ -7,3 +7,5 @@ La compilación de GitHub Actions empaqueta los archivos de `public`, compila `d
 Portal Celestial se reconoce al observar su estado. La cuenta de dos finales solo se activa con una fuente que identifique el personaje cuyo turno terminó; los avisos anónimos del registro no sirven para confirmar esa atribución.
 
 El daño por turno se agrupa desde el primer hechizo observado tras un aviso de cambio, por lo que los turnos se muestran como estimados y se numeran desde el primero detectado. Los eventos sin turno identificado no se incluyen en el daño por turno. La atribución y los daños duplicados siguen dependiendo de la información del registro.
+
+Al comenzar un combate y después de cada aviso de segundos devueltos, el primer lanzamiento identifica de forma estimada al personaje activo. El turno se cierra en el siguiente aviso. El detalle incluye daño, curas y armadura atribuidos; la numeración cuenta turnos observados y puede diferir si faltan eventos o se conectó a mitad de combate.

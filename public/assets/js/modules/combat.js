@@ -52,6 +52,13 @@ function processFightLog(line) {
 
 
 
+  // An explicit movement names its actor; effects merely received do not.
+  const movement = content.match(/^(.+?):\s+(?:se desplaza|se teletransporta)(?:\s|$)/i);
+  if (personalTurnBoundaryPending && movement && !nonCombatantList.some((nc) => movement[1].includes(nc))) {
+    personalTurnBoundaryPending = false;
+    startPersonalTurn(movement[1].trim(), "estimated");
+  }
+
   const affected = content.match(/^(.+?):\s+(.+)$/);
 
   if (affected) recordPersonalCombatEvent(affected[1].trim(), { type: "affected", message: affected[2].trim() });
@@ -472,6 +479,16 @@ function updateCombatData(dataSet, player, spell, amount, element) {
 
 
 
+  if (dataSet === healData || dataSet === armorData) {
+    const type = dataSet === healData ? "heal" : "armor";
+    recordPersonalCombatEvent(player, { type, spell, amount });
+    if (activePersonalTurn === player && personalTurns[player]) {
+      const store = type === "heal" ? personalHealingByTurn : personalArmorByTurn;
+      const turns = store[player] || (store[player] = {});
+      const number = personalTurns[player];
+      turns[number] = (turns[number] || 0) + amount;
+    }
+  }
   // Mark as dirty so we know we have data to save
 
   hasUnsavedChanges = true;
@@ -594,6 +611,8 @@ function saveFightToHistory() {
 
     personalDamageByTurn: JSON.parse(JSON.stringify(personalDamageByTurn)),
     personalTurnSources: JSON.parse(JSON.stringify(personalTurnSources)),
+    personalHealingByTurn: JSON.parse(JSON.stringify(personalHealingByTurn)),
+    personalArmorByTurn: JSON.parse(JSON.stringify(personalArmorByTurn)),
 
     timestamp: new Date().toLocaleTimeString(),
 
@@ -668,6 +687,11 @@ function performReset(isAuto = false) {
   personalTurnDamage = {};
 
   personalDamageByTurn = {};
+  personalHealingByTurn = {};
+  personalArmorByTurn = {};
+  personalTurnSources = {};
+  activePersonalTurn = null;
+  personalTurnBoundaryPending = true;
 
 
 
@@ -1594,6 +1618,8 @@ function saveLiveCombatState() {
 
     personalDamageByTurn,
     personalTurnSources,
+    personalHealingByTurn,
+    personalArmorByTurn,
     playerClasses,
 
     manualOverrides,
@@ -1642,6 +1668,8 @@ function loadLiveCombatState() {
 
     personalDamageByTurn = state.personalDamageByTurn || {};
     personalTurnSources = state.personalTurnSources || {};
+    personalHealingByTurn = state.personalHealingByTurn || {};
+    personalArmorByTurn = state.personalArmorByTurn || {};
     // A restored session starts between turns until a new boundary is observed.
     activePersonalTurn = null;
     personalTurnBoundaryPending = false;
