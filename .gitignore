@@ -10,3 +10,7 @@ __pycache__/
 desktop-assets.zip
 desktop-run.log
 ocr-probe.ps1
+
+# Registros del juego y copias rotadas
+*.log
+*.log.*
