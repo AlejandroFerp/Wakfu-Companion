@@ -43,26 +43,30 @@ function renderHyperObservations() {
     const rune = add(runes, "div", `class-rune ${state === null ? "is-unknown" : state ? "is-active" : ""} ${last === element ? "is-last" : ""}`);
     rune.title = `${label}: ${state === null ? "estado desconocido" : state ? "runa observada" : "runa retirada"}${last === element ? "; última runa guardada observada" : ""}`;
     const icon = document.createElement("img"); icon.src = new URL(`assets/img/elements/${element}.png`, document.baseURI).href; icon.alt = ""; rune.appendChild(icon);
-    add(rune, "span", "", label);
+    rune.setAttribute("aria-label", rune.title);
   }
   const metrics = add(hyperPanel, "div", "class-metrics");
-  const metric = (label, value) => { const box = add(metrics, "div", "class-metric"); add(box, "span", "class-metric-label", `${label}: `); add(box, "strong", "class-metric-value", value); };
-  metric("Turno", hyperObserved.estimatedTurn ? "En curso (estimado)" : hyperObserved.turn > 0 ? "Finalizado" : "Sin detectar");
-  metric("Abundancia", hyperObserved.abundance === null ? "—" : `${hyperObserved.abundance}/100`);
+  const metric = (symbol, label, value) => {
+    const box = add(metrics, "div", "class-metric");
+    box.title = `${label}: ${value}`; box.setAttribute("aria-label", box.title);
+    add(box, "span", "class-metric-icon", symbol).setAttribute("aria-hidden", "true");
+    add(box, "strong", "class-metric-value", value);
+  };
+  metric("◷", "Turno estimado por registro", hyperObserved.estimatedTurn ? "●" : "—");
+  metric("✺", "Abundancia", hyperObserved.abundance === null ? "—" : `${hyperObserved.abundance}`);
   const cost = nextCycleCost(hyperObserved);
-  metric("Próximo ciclo estimado", cost === null ? "—" : cost === "agotado" ? "Sin usos" : `${cost} BC`);
-  const indicators = add(hyperPanel, "div", "class-effects");
+  metric("↻", "Próximo Ciclo Elemental, coste estimado en BC", cost === null ? "—" : cost === "agotado" ? "0/5" : `${cost}`);
+  const indicators = add(metrics, "div", "class-effects");
   const observed = hyperObserved.effects[hyperTarget.value] || {};
   for (const [key, label] of [["debilidad", "Debilidad"], ["luminiscencia", "Luminiscencia"]]) {
     const item = observed[key];
     const recent = item && item.active && item.turn > 0 && item.turn === hyperObserved.turn && hyperObserved.estimatedTurn;
     const inactive = item && item.active === false;
-    const detail = item ? `${item.name}${item.time ? ` · ${item.time}` : ""}` : "";
-    const status = inactive ? `retirado: ${detail}` : item ? `observado: ${detail}${recent ? "" : " · duración desconocida"}` : "sin información";
+    const status = inactive ? "retirado" : recent ? "observado este turno" : item ? "duración desconocida" : "sin información";
     const badge = add(indicators, "span", `class-effect ${recent ? "is-active" : inactive ? "" : "is-unknown"}`);
-    add(badge, "span", "class-effect-icon", key === "debilidad" ? "✦" : "☼");
-    add(badge, "span", "", `${label}: ${status}`);
-    badge.title = "Última línea observada en este objetivo. La duración y el autor no siempre están confirmados.";
+    badge.textContent = key === "debilidad" ? "✦" : "☼";
+    badge.title = `${label}: ${status}${hyperTarget.value ? ` · ${hyperTarget.value}` : ""}. Autor sin confirmar.`;
+    badge.setAttribute("aria-label", badge.title);
   }
 }
 if (hyperTarget) hyperTarget.addEventListener("change", renderHyperObservations);

@@ -3382,3 +3382,21 @@ body.pip-window .empty-state {
     transform: translateY(0);
   }
 }
+
+/* Compact combat HUD */
+.class-tracker { min-height: 205px; }
+.class-tracker-content { padding: 8px 10px; color: #f2f2f2; background: rgba(16,20,25,.78); }
+.class-tracker-controls { gap: 5px; font-size: .72rem; }
+.class-tracker-controls select { padding: 2px 4px; }
+.class-runes { gap: 5px; margin: 7px 0; }
+.class-rune { box-sizing: border-box; width: 37px; height: 37px; padding: 2px; border-radius: 5px; background: rgba(14,18,23,.68); }
+.class-rune img { width: 30px; height: 30px; margin: 0; }
+.class-rune.is-last { outline-width: 2px; outline-offset: 0; }
+.class-metrics { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.class-metric { display: inline-flex; align-items: center; gap: 4px; padding: 4px 6px; min-height: 29px; background: rgba(14,18,23,.68); border: 1px solid #52606a; border-radius: 5px; }
+.class-metric-icon { color: #e9ca76; font-size: 18px; line-height: 1; }
+.class-metric-value { font-size: 1rem; margin: 0; color: #fff; }
+.class-effects { gap: 5px; margin: 0; }
+.class-effect { justify-content: center; box-sizing: border-box; width: 30px; height: 30px; padding: 0; font-size: 20px; background: rgba(30,35,39,.8); color: #90999e; }
+.class-effect.is-active { color: #b7f0d0; background: rgba(45,112,75,.8); }
+.class-effect.is-unknown { color: #c2a675; }

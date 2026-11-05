@@ -38,14 +38,15 @@ document.getElementById('app').onload = async () => {
       ''
     ].join('\n');
     await app.parseFile();
+    if (!app.document.getElementById('hyper-target').hidden) throw Error('El selector de objetivo debe permanecer oculto');
     const list = app.document.getElementById('combat-log-list');
     const rows = [...list.querySelectorAll('.combat-log-event')];
     if (rows.length !== 15 || rows.map(x => x.dataset.type).join(',') !== 'cast,damage,resource,state,damage,summon,movement,state,state,resource,other,cast,state,other,state') throw Error('Eventos o categorías incorrectos');
     if (app.document.getElementById('hyper-start-turn') || app.document.querySelector('#hyper-observations .class-note') || /espalda/i.test(app.document.getElementById('hyper-observations').textContent)) throw Error('La tarjeta muestra elementos retirados');
-    if (!app.document.getElementById('hyper-observations').textContent.includes('Abundancia: 60')) throw Error('Observación de abundancia incorrecta');
-    if (!app.document.getElementById('hyper-observations').textContent.includes('Próximo ciclo estimado: 50 BC')) throw Error('Coste de ciclo incorrecto');
-    if (!app.document.getElementById('hyper-observations').textContent.includes('Luminiscencia: observado: Luminiscencia · 12:00:03')) throw Error('Luminiscencia no detectada');
-    if (!app.document.querySelector('.class-rune.is-last.is-active')?.textContent.includes('Fuego')) throw Error('Última runa de fuego no marcada');
+    if (!app.document.querySelector('[aria-label="Abundancia: 60"]')) throw Error('Observación de abundancia incorrecta');
+    if (!app.document.querySelector('[aria-label="Próximo Ciclo Elemental, coste estimado en BC: 50"]')) throw Error('Coste de ciclo incorrecto');
+    if (!app.document.querySelector('[aria-label^="Luminiscencia: observado este turno"]')) throw Error('Luminiscencia no detectada');
+    if (!app.document.querySelector('.class-rune.is-last.is-active')?.getAttribute('aria-label').includes('Fuego')) throw Error('Última runa de fuego no marcada');
     if (!rows[1].textContent.includes('-1.234 PdV')) throw Error('Texto original perdido');
     if (!rows[0].querySelector('[aria-label="Crítico"]')) throw Error('Falta el indicador de crítico');
     if (rows[4].querySelector('[aria-label="Espalda"]')) throw Error('No se retiró el indicador de espalda');

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nexus Wakfu Companion</title>
-    <link rel="stylesheet" href="assets/css/style.css?v=8" />
+    <link rel="stylesheet" href="assets/css/style.css?v=9" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
   </head>
   <body>
@@ -140,7 +140,7 @@
               <label id="hyper-choice-label" hidden>Personaje <select id="hyper-character"></select></label>
               <span id="hyper-detected">Buscando hipermago...</span>
             </div>
-            <label class="class-note">Objetivo <select id="hyper-target"><option value="">Sin objetivo detectado</option></select></label>
+            <select id="hyper-target" aria-label="Objetivo de efectos" hidden><option value="">Sin objetivo detectado</option></select>
             <div id="hyper-observations" aria-live="polite">Esperando a identificar un hipermago por sus hechizos.</div>
             </div>
             <div id="selotrop-panel" hidden>
@@ -827,12 +827,12 @@
     <!-- Modules -->
     <script src="assets/js/modules/sessionRecap.js"></script>
     <script src="assets/js/modules/state.js?v=3"></script>
-    <script src="assets/js/modules/utils.js"></script>
+    <script src="assets/js/modules/utils.js?v=2"></script>
     <script src="assets/js/modules/filesystem.js"></script>
     <script src="assets/js/modules/chat.js"></script>
     <script src="assets/js/modules/hypermageRules.js?v=7"></script>
     <script src="assets/js/modules/selotrop.js?v=3"></script>
-    <script src="assets/js/modules/combatLog.js?v=18"></script>
+    <script src="assets/js/modules/combatLog.js?v=19"></script>
     <script src="assets/js/modules/combat.js?v=15"></script>
     <script src="assets/js/modules/tracker.js"></script>
     <script src="assets/js/modules/forecast.js"></script>
