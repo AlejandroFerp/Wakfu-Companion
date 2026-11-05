@@ -38,6 +38,11 @@ document.getElementById('app').onload = async () => {
       ''
     ].join('\n');
     await app.parseFile();
+    const settings = app.document.getElementById('class-settings-toggle');
+    settings.click();
+    if (settings.getAttribute('aria-expanded') !== 'true') throw Error('No se abrieron los ajustes');
+    settings.click();
+    if (settings.getAttribute('aria-expanded') !== 'false') throw Error('No se cerraron los ajustes');
     if (!app.document.getElementById('hyper-target').hidden) throw Error('El selector de objetivo debe permanecer oculto');
     const list = app.document.getElementById('combat-log-list');
     const rows = [...list.querySelectorAll('.combat-log-event')];

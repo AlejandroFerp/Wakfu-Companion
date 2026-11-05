@@ -3402,3 +3402,12 @@ body.pip-window .empty-state {
 .class-effect.is-unknown { color: #c2a675; }
 
 .class-tracker-content.is-turn-estimated { box-shadow: inset 0 0 0 2px rgba(224,184,89,.9), inset 0 0 18px rgba(224,184,89,.18); }
+
+/* Compact display: settings remain available through the gear. */
+.class-tracker { min-height: 145px; align-self: start; }
+.class-tracker-content { position: relative; padding: 5px 7px; }
+.class-settings-toggle { float: right; width: 25px; height: 25px; padding: 0; border: 1px solid #495661; border-radius: 5px; background: #20282e; color: #c6d3d8; cursor: pointer; }
+.class-tracker-content .class-tracker-controls { display: none; }
+.class-tracker-content.is-configuring .class-tracker-controls { display: flex; clear: both; padding: 4px 0; }
+.class-tracker-content .class-runes { margin: 3px 0 5px; }
+.pip-window .class-tracker-content { width: 100%; box-sizing: border-box; min-height: 100%; overflow: auto; }

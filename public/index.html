@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nexus Wakfu Companion</title>
-    <link rel="stylesheet" href="assets/css/style.css?v=10" />
+    <link rel="stylesheet" href="assets/css/style.css?v=11" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
   </head>
   <body>
@@ -134,7 +134,8 @@
           <div class="panel-header"><span class="header-label">Seguimiento de clase</span>
             <button class="pip-btn" type="button" onclick="togglePiP('class-tracker-content', 'Seguimiento de clase')" title="Ventana flotante" aria-label="Abrir seguimiento de clase en ventana flotante">⧉</button>
           </div>
-          <div id="class-tracker-content" class="class-tracker-content">
+          <div id="class-tracker-content" class="class-tracker-content">
+            <button type="button" id="class-settings-toggle" class="class-settings-toggle" aria-label="Configurar clase y personaje" aria-expanded="false" title="Configurar clase y personaje">&#9881;</button>
             <div class="class-tracker-controls"><label>Clase <select id="class-selector"><option value="huppermage">Hipermago</option><option value="eliotrope">Selotrop</option></select></label></div>
             <div id="hyper-class-panel"><div class="class-tracker-controls">
               <label id="hyper-choice-label" hidden>Personaje <select id="hyper-character"></select></label>
@@ -827,12 +828,12 @@
     <!-- Modules -->
     <script src="assets/js/modules/sessionRecap.js"></script>
     <script src="assets/js/modules/state.js?v=3"></script>
-    <script src="assets/js/modules/utils.js?v=2"></script>
+    <script src="assets/js/modules/utils.js?v=3"></script>
     <script src="assets/js/modules/filesystem.js"></script>
     <script src="assets/js/modules/chat.js"></script>
     <script src="assets/js/modules/hypermageRules.js?v=7"></script>
     <script src="assets/js/modules/selotrop.js?v=3"></script>
-    <script src="assets/js/modules/combatLog.js?v=20"></script>
+    <script src="assets/js/modules/combatLog.js?v=21"></script>
     <script src="assets/js/modules/combat.js?v=15"></script>
     <script src="assets/js/modules/tracker.js"></script>
     <script src="assets/js/modules/forecast.js"></script>

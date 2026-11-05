@@ -172,8 +172,8 @@ async function togglePiP(elementId, title) {
 
   try {
     pipWindow = await window.documentPictureInPicture.requestWindow({
-      width: elementId === "class-tracker-content" ? 300 : elementId === "chat-list" ? 400 : 450,
-      height: elementId === "class-tracker-content" ? 180 : 500,
+      width: elementId === "class-tracker-content" ? 250 : elementId === "chat-list" ? 400 : 450,
+      height: elementId === "class-tracker-content" ? 135 : 500,
     });
 
     // --- FUNCTION BRIDGING ---

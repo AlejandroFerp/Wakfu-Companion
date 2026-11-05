@@ -10,6 +10,12 @@ const combatIconStatus = document.getElementById("combat-icon-status");
 const MAX_COMBAT_LOG_EVENTS = 1000;
 const hyperCharacter = document.getElementById("hyper-character");
 const hyperPanel = document.getElementById("hyper-observations");
+const classTrackerContent = document.getElementById("class-tracker-content");
+const classSettingsToggle = document.getElementById("class-settings-toggle");
+if (classSettingsToggle && classTrackerContent) classSettingsToggle.addEventListener("click", () => {
+  const open = classTrackerContent.classList.toggle("is-configuring");
+  classSettingsToggle.setAttribute("aria-expanded", String(open));
+});
 const hyperChoiceLabel = document.getElementById("hyper-choice-label");
 const hyperDetected = document.getElementById("hyper-detected");
 const hyperTarget = document.getElementById("hyper-target");
@@ -18,7 +24,7 @@ let hyperObserved = createHypermageObservations();
 function renderHyperObservations() {
   if (!hyperPanel) return;
   if (!hyperCharacter.value.trim()) {
-    document.getElementById("class-tracker-content")?.classList.remove("is-turn-estimated");
+    classTrackerContent?.classList.remove("is-turn-estimated");
     hyperPanel.textContent = "Esperando a identificar un hipermago por sus hechizos.";
     return;
   }
@@ -36,7 +42,7 @@ function renderHyperObservations() {
     hyperTarget.dataset.effectSerial = String(hyperObserved.effectSerial);
   }
   hyperPanel.replaceChildren();
-  const card = document.getElementById("class-tracker-content");
+  const card = classTrackerContent;
   if (card) {
     card.classList.toggle("is-turn-estimated", Boolean(hyperObserved.estimatedTurn));
     card.title = hyperObserved.estimatedTurn ? "Turno estimado por el registro, aún sin confirmación visual" : "Turno sin confirmar visualmente";
