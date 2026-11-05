@@ -13,27 +13,30 @@ document.getElementById('app').onload=async()=>{
     const d=app.document, selector=d.getElementById('class-selector');selector.value='eliotrope';selector.dispatchEvent(new app.Event('change'));
     if(d.getElementById('selotrop-panel').hidden || !d.getElementById('hyper-class-panel').hidden) throw Error('No se seleccionó el panel del selotrop');
     content=['12:00:00,000 - [Información (combate)] Uno lanza el hechizo Wakmeha.',
-      '12:00:01,000 - [Información (combate)] Uno: Portal Celestial - Contador (+3 niv.)',
-      '12:00:02,000 - [Información (combate)] Uno: Don Celestial (+1 niv.) (Portal Celestial)',
-      '12:00:03,000 - [Información (combate)] Dos lanza el hechizo Wakmeha.',
-      '12:00:04,000 - [Información (combate)] Dos: Portal Celestial - Contador (+2 niv.)',
-      '12:00:05,000 - [Información (combate)] Dos: 2 PA (Don Celestial)',
-      '12:00:05,500 - [Información (combate)] Tres: Don Celestial (+2 niv.) (Portal Celestial)',''].join('\n');
+      '12:00:01,000 - [Información (combate)] Uno: Portal Celestial (Niv. 1)',
+      '12:00:01,050 - [Información (combate)] Uno: Portal Celestial (Niv. 1)',
+      '12:00:02,000 - [Información (combate)] Dos: Portal Celestial (Niv. 1)',''].join('\n');
     await app.parseFile();
     const choose=d.getElementById('selotrop-character'),details=d.getElementById('selotrop-observations');
     choose.value='Uno';choose.dispatchEvent(new app.Event('change'));
-    if(!details.textContent.includes('+3 niv.') || !details.textContent.includes('+1 niv.')) throw Error('Faltan las señales del primer personaje');
+    let icon=details.querySelector('img');
+    if(!icon || !icon.classList.contains('is-observed') || icon.classList.contains('is-expired')) throw Error('No se detectó el portal');
+    if(d.querySelectorAll('.combat-log-event[data-message="Uno: Portal Celestial (Niv. 1)"]').length!==1) throw Error('Portal duplicado');
+    app.appendCombatLog('12:00:03,000 - [Información (combate)] 30 segundos devueltos para el siguiente turno.');
+    app.appendCombatLog('12:00:04,000 - [Información (combate)] 20 segundos devueltos para el siguiente turno.');
+    if(details.querySelector('img').classList.contains('is-expired')) throw Error('Se atribuyeron finales sin nombre');
+    app.recordConfirmedSelotropTurnEnd('Dos');
+    app.recordConfirmedSelotropTurnEnd('Uno');
+    if(details.querySelector('img').classList.contains('is-expired')) throw Error('Aviso anticipado');
+    app.recordConfirmedSelotropTurnEnd('Uno');
+    if(!details.querySelector('img').classList.contains('is-expired')) throw Error('No se avisó tras dos fines confirmados');
     choose.value='Dos';choose.dispatchEvent(new app.Event('change'));
-    if(!details.textContent.includes('+2 niv.') || !details.textContent.includes('2 PA') || details.textContent.includes('+3 niv.')) throw Error('Se mezclaron las señales de dos personajes');
-    choose.value='Tres';choose.dispatchEvent(new app.Event('change'));
-    if(!details.textContent.includes('+2 niv.')) throw Error('No se reconoció una señal sin lanzamiento previo');
-    choose.value='Dos';choose.dispatchEvent(new app.Event('change'));
-    content += "12:00:06,000 - [Información (combate)] Dos: ya no se encuentra bajo el estado 'Don Celestial'\n";
-    await app.parseFile();
-    if(!details.textContent.includes('retirado')) throw Error('No se reflejó la retirada observada');
+    if(details.querySelector('img').classList.contains('is-expired')) throw Error('Se mezclaron los personajes');
+    content += '12:00:06,000 - [Información (combate)] Uno: Portal Celestial (Niv. 1)\n';
+    await app.parseFile();choose.value='Uno';choose.dispatchEvent(new app.Event('change'));
+    if(details.querySelector('img').classList.contains('is-expired')) throw Error('No se reinició al reaplicar');
     app.performReset();
-    if(details.textContent.includes('+2 niv.') || details.textContent.includes('2 PA')) throw Error('No se reiniciaron las observaciones');
-    if([...choose.options].some(option=>option.value==='Tres')) throw Error('Una señal antigua siguió como personaje detectado');
+    if(details.querySelector('img')?.classList.contains('is-observed')) throw Error('No se reinició el estado');
     selector.value='huppermage';selector.dispatchEvent(new app.Event('change'));
     if(!d.getElementById('selotrop-panel').hidden || d.getElementById('hyper-class-panel').hidden) throw Error('No se recuperó el panel del hipermago');
     result.textContent='PRUEBA CORRECTA';

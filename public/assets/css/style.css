@@ -3416,3 +3416,8 @@ body.pip-window .empty-state {
 .class-tracker { background: transparent; border-color: transparent; min-height: 125px; }
 .class-tracker-content { background: transparent; padding: 3px 4px; }
 .pip-window .class-tracker-content { background: transparent; }
+
+.selotrop-portal-icon { width: 42px; height: 42px; object-fit: contain; border: 1px solid #8f8771; border-radius: 5px; }
+.selotrop-portal-icon.is-unknown { opacity: .35; filter: grayscale(1); }
+.selotrop-portal-icon.is-observed { outline: 1px dashed #dfbb65; outline-offset: 2px; }
+.selotrop-portal-icon.is-expired { opacity: .45; filter: grayscale(1); outline: 2px solid #ff966b; }

@@ -1,0 +1,33 @@
+name: Build desktop prototype
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - 'desktop.go'
+      - 'go.mod'
+      - 'public/**'
+      - '.github/workflows/desktop.yml'
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+      - name: Package frontend
+        shell: pwsh
+        run: |
+          python -c "from pathlib import Path; import zipfile; z=zipfile.ZipFile('desktop-assets.zip','w',zipfile.ZIP_DEFLATED,compresslevel=4); [z.write(p,p.as_posix()) for p in Path('public').rglob('*') if p.is_file()]; z.close()"
+      - name: Build executable
+        run: go build -trimpath -ldflags="-s -w" -o WakfuCompanion.exe desktop.go
+      - name: Publish desktop release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = 'desktop-' + $env:GITHUB_SHA.Substring(0, 12)
+          gh release create $tag WakfuCompanion.exe --title "Wakfu Companion escritorio $tag" --notes "Prototipo de Windows generado desde $env:GITHUB_SHA. Requiere Microsoft Edge."

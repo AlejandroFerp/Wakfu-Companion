@@ -86,6 +86,14 @@ document.getElementById('app').onload = async () => {
     app.appendCombatLog('20:51:30,000 - [Información (combate)] Ejemplo lanza el hechizo Ciclo Elemental.');
     app.appendCombatLog('20:51:30,080 - [Información (combate)] Otro lanza el hechizo Ciclo Elemental.');
     if (list.querySelectorAll('.combat-log-event').length !== beforeCasts + 3) throw Error('No se filtró correctamente el lanzamiento duplicado');
+    if (app.possiblyMultipleClients()) throw Error('Se detectaron cuentas con una sola coincidencia');
+    app.appendCombatLog('20:51:31,000 - [Información (combate)] Otro: Portal Celestial (Niv. 1)');
+    app.appendCombatLog('20:51:31,040 - [Información (combate)] Otro: Portal Celestial (Niv. 1)');
+    const countBeforeDamage = list.querySelectorAll('.combat-log-event').length;
+    app.appendCombatLog('20:51:32,000 - [Información (combate)] Objetivo: -100 PdV (fuego)');
+    app.appendCombatLog('20:51:32,040 - [Información (combate)] Objetivo: -100 PdV (fuego)');
+    if (!app.possiblyMultipleClients()) throw Error('No se detectaron mensajes repetidos');
+    if (list.querySelectorAll('.combat-log-event').length !== countBeforeDamage + 2) throw Error('Se eliminaron daños potencialmente reales');
     result.textContent = 'PRUEBA CORRECTA';
   } catch (error) { result.textContent = 'PRUEBA FALLIDA: ' + error.message; }
 };

@@ -69,7 +69,7 @@ function observeHypermageLine(previous, character, line) {
     const time = line.match(/^(\d{2}):(\d{2}):(\d{2}),(\d{3})/);
     const millis = time ? (((Number(time[1]) * 60 + Number(time[2])) * 60 + Number(time[3])) * 1000 + Number(time[4])) : null;
     // Multiple Wakfu clients may emit the same cast a few milliseconds apart.
-    const delta = millis === null || previous.lastCycleMillis === null ? null : (millis - previous.lastCycleMillis + 86400000) % 86400000;
+    const delta = millis === null || next.lastCycleMillis === null ? null : (millis - next.lastCycleMillis + 86400000) % 86400000;
     if (delta !== null && delta <= 200) return next;
     next.lastCycleMillis = millis;
     next.lastElementalCycle = match[0].slice(0, 8);

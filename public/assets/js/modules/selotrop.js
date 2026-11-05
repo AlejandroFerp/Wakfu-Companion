@@ -16,18 +16,13 @@ function renderSelotropObservations() {
     selotropDetails.textContent = "Esperando a identificar un selotrop por sus hechizos.";
     return;
   }
-  for (const [label, value] of [["Portal Celestial - Contador", state.portal], ["Don Celestial", state.don], ["Último recurso de Don Celestial", state.resource]]) {
-    const line = document.createElement("div");
-    const title = document.createElement("strong");
-    title.textContent = `${label}: `;
-    line.appendChild(title);
-    line.appendChild(document.createTextNode(value || "sin datos observados"));
-    selotropDetails.appendChild(line);
-  }
-  const note = document.createElement("p");
-  note.className = "class-note";
-  note.textContent = "Últimas señales del registro; no indican necesariamente el estado o la acumulación actuales.";
-  selotropDetails.appendChild(note);
+  const icon = document.createElement("img");
+  icon.src = new URL("assets/img/class-icons/portal-celestial.png", document.baseURI).href;
+  icon.alt = "Portal Celestial";
+  icon.className = `selotrop-portal-icon ${state.celestial ? "is-observed" : "is-unknown"}`;
+  icon.title = !state.celestial ? "Portal Celestial: sin observar" : state.celestial.expired ? "Portal Celestial: reaplicar" : "Portal Celestial observado; duración sin confirmar";
+  if (state.celestial?.expired) icon.classList.add("is-expired");
+  selotropDetails.appendChild(icon);
 }
 
 function syncSelotropSelection() {
@@ -62,19 +57,37 @@ function observeSelotropLog(line, deferRender = false) {
   if (separator < 1) return;
   const name = content.slice(0, separator);
   const event = content.slice(separator + 2);
+  const celestial = /^Portal Celestial\s*\(Niv\.\s*\d+\)/i.test(event);
+  const celestialRemoved = /^ya no se encuentra bajo el estado ['’]Portal Celestial['’]/i.test(event);
   const portal = event.match(/^Portal Celestial - Contador\s*\(([^)]+)\)/i);
   const don = event.match(/^Don Celestial\s*\(([^)]+)\)/i);
   const removed = /^ya no se encuentra bajo el estado ['’]Don Celestial['’]/i.test(event);
   const resource = /^[+-]?\d+\s+(?:PA|PM|PW)\s*\(Don Celestial\)/i.test(event);
-  if (!portal && !don && !removed && !resource) return;
+  if (!celestial && !celestialRemoved && !portal && !don && !removed && !resource) return;
   const isNew = !selotropObservations[name];
   const state = selotropObservations[name] || (selotropObservations[name] = {});
+  if (celestial) {
+    const t = line.match(/^(\d{2}):(\d{2}):(\d{2}),(\d{3})/);
+    const ms = t ? (((+t[1] * 60 + +t[2]) * 60 + +t[3]) * 1000 + +t[4]) : null;
+    const delta = ms !== null && state.celestial?.appliedAt !== null && state.celestial?.appliedAt !== undefined ? (ms - state.celestial.appliedAt + 86400000) % 86400000 : null;
+    if (delta === null || delta > 200) state.celestial = { appliedAt: ms, confirmedEnds: 0, expired: false };
+  }
+  if (celestialRemoved && state.celestial) state.celestial.expired = true;
   if (portal) state.portal = portal[1];
   if (don) state.don = don[1];
   if (removed) state.don = "retirado (última señal)";
   if (resource) state.resource = event;
   if (isNew) syncSelotropSelection();
   else if (!deferRender && name === selotropCharacter.value) renderSelotropObservations();
+}
+
+// Call only from a source that identifies whose turn actually ended.
+function recordConfirmedSelotropTurnEnd(name) {
+  const state = selotropObservations[name]?.celestial;
+  if (!state || state.expired) return;
+  state.confirmedEnds = Math.min(2, state.confirmedEnds + 1);
+  if (state.confirmedEnds >= 2) state.expired = true;
+  if (name === selotropCharacter.value) renderSelotropObservations();
 }
 
 function resetSelotropObservations() {
