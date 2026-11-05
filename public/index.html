@@ -135,13 +135,19 @@
             <button class="pip-btn" type="button" onclick="togglePiP('class-tracker-content', 'Seguimiento de clase')" title="Ventana flotante" aria-label="Abrir seguimiento de clase en ventana flotante">⧉</button>
           </div>
           <div id="class-tracker-content" class="class-tracker-content">
-            <div class="class-tracker-controls"><label>Clase <select id="class-selector"><option value="huppermage">Hipermago</option></select></label>
+            <div class="class-tracker-controls"><label>Clase <select id="class-selector"><option value="huppermage">Hipermago</option><option value="eliotrope">Selotrop</option></select></label></div>
+            <div id="hyper-class-panel"><div class="class-tracker-controls">
               <label id="hyper-choice-label" hidden>Personaje <select id="hyper-character"></select></label>
               <span id="hyper-detected">Buscando hipermago...</span>
             </div>
             <label class="class-note">Objetivo <select id="hyper-target"><option value="">Sin objetivo detectado</option></select></label>
             <div id="hyper-observations" aria-live="polite">Esperando a identificar un hipermago por sus hechizos.</div>
             <button type="button" id="hyper-start-turn" class="class-turn-btn">Empieza mi turno</button>
+            </div>
+            <div id="selotrop-panel" hidden>
+              <div class="class-tracker-controls"><label>Personaje <select id="selotrop-character"><option value="">Sin selotrop detectado</option></select></label> <span id="selotrop-status">Buscando selotrop...</span></div>
+              <div id="selotrop-observations" aria-live="polite">Esperando a identificar un selotrop por sus hechizos.</div>
+            </div>
           </div>
         </div>
         <!-- Hidden legacy tracker: existing application dependencies remain available. -->
@@ -824,8 +830,9 @@
     <script src="assets/js/modules/filesystem.js"></script>
     <script src="assets/js/modules/chat.js"></script>
     <script src="assets/js/modules/hypermageRules.js?v=4"></script>
-    <script src="assets/js/modules/combatLog.js?v=9"></script>
-    <script src="assets/js/modules/combat.js?v=13"></script>
+    <script src="assets/js/modules/selotrop.js?v=1"></script>
+    <script src="assets/js/modules/combatLog.js?v=11"></script>
+    <script src="assets/js/modules/combat.js?v=14"></script>
     <script src="assets/js/modules/tracker.js"></script>
     <script src="assets/js/modules/forecast.js"></script>
     <script src="assets/js/modules/ui.js?v=8"></script>

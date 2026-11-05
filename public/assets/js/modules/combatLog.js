@@ -89,10 +89,10 @@ function syncHypermageSelection() {
     hyperCharacter.dataset.candidates = signature;
     if (names.includes(previous)) hyperCharacter.value = previous;
     if (hyperCharacter.value !== previous) hyperObserved = createHypermageObservations();
+    renderHyperObservations();
   }
   hyperChoiceLabel.hidden = names.length < 2;
   hyperDetected.textContent = names.length === 0 ? "Buscando hipermago..." : names.length === 1 ? `Hipermago detectado: ${names[0]}` : "Selecciona el hipermago que quieres seguir.";
-  renderHyperObservations();
 }
 let combatSpellDescriptions = {};
 try { combatSpellDescriptions = JSON.parse(localStorage.getItem("wakfu_local_spell_descriptions") || "{}"); } catch (_) {}
@@ -179,12 +179,14 @@ function endCombatLogBatch() {
   while (combatLogList.children.length > MAX_COMBAT_LOG_EVENTS) combatLogList.firstElementChild.remove();
   if (batch.atBottom && batch.rows.length) combatLogList.scrollTop = combatLogList.scrollHeight;
   if (batch.hyperDirty) renderHyperObservations();
+  if (typeof renderSelotropObservations === "function") renderSelotropObservations();
 }
 
 function appendCombatLog(line) {
   const match = line.match(/^(\d{2}:\d{2}:\d{2}),\d+\s+-\s+\[(?:Información \(combate\)|Information \(combat\)|Fight Log|Registro de lutas)\]\s*(.*)$/i);
   if (!match || !combatLogList) return;
   syncHypermageSelection();
+  if (typeof observeSelotropLog === "function") observeSelotropLog(line, Boolean(combatLogBatch));
   if (hyperCharacter && hyperCharacter.value.trim()) {
     hyperObserved = observeHypermageLine(hyperObserved, hyperCharacter.value.trim(), line);
     if (combatLogBatch) combatLogBatch.hyperDirty = true;

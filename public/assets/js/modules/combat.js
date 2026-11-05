@@ -267,6 +267,7 @@ function detectClass(playerName, spellName) {
       playerClasses[playerName] = detected;
       lastRenderSignature = "";
       if (typeof syncHypermageSelection === "function") syncHypermageSelection();
+      if (typeof syncSelotropSelection === "function") syncSelotropSelection();
       // Clear icon cache so it re-renders with the new class icon
       delete playerIconCache[playerName];
     }
@@ -338,6 +339,7 @@ function performReset(isAuto = false) {
   fightStartTime = null;
   pendingArmorDamage = null; // Clear any hanging buffer
   stateSources = {};
+  if (typeof resetSelotropObservations === "function") resetSelotropObservations();
 
   // 4. CLEAR STORAGE
   localStorage.removeItem("wakfu_live_combat_state");
