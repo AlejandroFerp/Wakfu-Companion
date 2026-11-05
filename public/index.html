@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nexus Wakfu Companion</title>
-    <link rel="stylesheet" href="assets/css/style.css?v=13" />
+    <link rel="stylesheet" href="assets/css/style.css?v=14" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
   </head>
   <body>
@@ -41,7 +41,7 @@
       <!-- 3-Column Layout -->
       <div class="panels-container">
         <!-- 1. Combat Meter (Damage, Healing & Armor) -->
-        <div class="tool-panel">
+        <div class="tool-panel meter-panel">
           <div class="panel-header tab-header">
             <div class="meter-tab active" id="tab-damage" onclick="switchMeterMode('damage')">
               <img src="./assets/img/headers/damage.png" class="tab-icon" onerror="this.style.display='none'" />
@@ -224,10 +224,10 @@
             <label>Tipo <select id="combat-log-type"><option value="all">Todos</option><option value="cast">Hechizos</option><option value="damage">Daño</option><option value="heal">Curas</option><option value="armor">Armadura</option><option value="resource">Recursos</option><option value="state">Estados</option><option value="movement">Movimiento</option><option value="summon">Invocaciones</option><option value="other">Otros</option></select></label>
             <label>Buscar <input id="combat-log-search" type="search" placeholder="Personaje, hechizo o efecto" /></label>
           </div>
-          <details class="combat-log-reference"><summary>Datos locales de hechizos</summary>
-            <label>Descripciones locales <input id="combat-spell-import" type="file" accept=".json,application/json" /></label>
+          <details class="combat-log-reference"><summary>Datos locales de hechizos</summary><p class="spell-import-help">Opcional: selecciona archivos JSON exportados de tu juego; no son los archivos del registro.</p>
+            <label title="Importa el JSON de descripciones exportado de tu juego. Al pasar el ratón sobre un hechizo del registro podrás leer su descripción.">Descripciones <span class="help-icon" tabindex="0" aria-label="JSON de descripciones exportado del juego; muestra la descripción al pasar el ratón sobre un hechizo" title="JSON exportado del juego. Muestra la descripción al pasar el ratón por un hechizo.">?</span> <input id="combat-spell-import" type="file" accept=".json,application/json" /></label>
             <span id="combat-spell-status">Opcional: importa las descripciones de tu juego.</span>
-            <label>Iconos locales <input id="combat-icon-import" type="file" accept=".json,application/json" /></label>
+            <label title="Importa el JSON de iconos exportado de tu juego para mostrar el icono junto al hechizo en el registro.">Iconos <span class="help-icon" tabindex="0" aria-label="JSON de iconos exportado del juego; añade imágenes a los hechizos del registro" title="JSON exportado del juego. Añade iconos a los hechizos del registro.">?</span> <input id="combat-icon-import" type="file" accept=".json,application/json" /></label>
             <span id="combat-icon-status">Opcional: importa los iconos de tu juego.</span>
           </details>
           <div id="combat-log-list" role="log" aria-label="Registro de combate" aria-live="off">

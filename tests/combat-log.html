@@ -94,6 +94,11 @@ document.getElementById('app').onload = async () => {
     app.appendCombatLog('20:51:32,040 - [Información (combate)] Objetivo: -100 PdV (fuego)');
     if (!app.possiblyMultipleClients()) throw Error('No se detectaron mensajes repetidos');
     if (list.querySelectorAll('.combat-log-event').length !== countBeforeDamage + 2) throw Error('Se eliminaron daños potencialmente reales');
+    const trackerBox = app.document.getElementById('class-tracker').getBoundingClientRect();
+    const meterBox = app.document.querySelector('.meter-panel').getBoundingClientRect();
+    const logBox = app.document.querySelector('.combat-log-panel').getBoundingClientRect();
+    if (!(trackerBox.left > meterBox.left && logBox.top >= trackerBox.bottom && Math.abs(logBox.left-trackerBox.left) < 2)) throw Error('La distribución de dos columnas es incorrecta');
+    if (app.document.querySelectorAll('.combat-log-reference .help-icon[title]').length !== 2) throw Error('Faltan las ayudas de importación');
     result.textContent = 'PRUEBA CORRECTA';
   } catch (error) { result.textContent = 'PRUEBA FALLIDA: ' + error.message; }
 };

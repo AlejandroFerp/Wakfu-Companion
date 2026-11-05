@@ -3421,3 +3421,15 @@ body.pip-window .empty-state {
 .selotrop-portal-icon.is-unknown { opacity: .35; filter: grayscale(1); }
 .selotrop-portal-icon.is-observed { outline: 1px dashed #dfbb65; outline-offset: 2px; }
 .selotrop-portal-icon.is-expired { opacity: .45; filter: grayscale(1); outline: 2px solid #ff966b; }
+
+/* Two columns: meter left, compact class tracker above the combat log on the right. */
+.panels-container { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-areas: "meter tracker" "meter combat"; grid-template-rows: max-content minmax(380px,1fr); align-items: stretch; }
+.meter-panel { grid-area: meter; min-height: 380px; }
+.class-tracker { grid-area: tracker; width: min(100%, 330px); }
+.combat-log-panel { grid-area: combat; }
+.help-icon { display: inline-flex !important; justify-content: center; align-items: center; width: 16px; height: 16px; margin: 0 !important; border: 1px solid #77919e; border-radius: 50%; color: #d2e6ef; cursor: help; font-size: 11px; }
+.spell-import-help { margin: 5px 0 8px; line-height: 1.4; }
+@media (max-width: 800px) {
+  .panels-container { grid-template-columns: minmax(0,1fr); grid-template-areas: "meter" "tracker" "combat"; grid-template-rows: auto auto minmax(380px,1fr); }
+  .meter-panel { min-height: 300px; }
+}
