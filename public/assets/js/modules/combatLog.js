@@ -64,7 +64,6 @@ function renderHyperObservations() {
     add(badge, "span", "", `${label}: ${status}`);
     badge.title = "Última línea observada en este objetivo. La duración y el autor no siempre están confirmados.";
   }
-  add(hyperPanel, "p", "class-note", `${last ? "Borde dorado: última runa guardada observada. " : ""}${hyperObserved.bcFullSignal ? "Última señal: BC lleno. " : ""}${cost === null ? "Esperando un posible turno del personaje; el registro no identifica el turno con certeza." : cost === "agotado" ? "Turno estimado: cinco lanzamientos registrados. Puede haber acciones fuera de turno." : `Turno estimado por el primer hechizo tras un cambio de turno: ${hyperObserved.cycleUses}/5 lanzamientos registrados. Puede haber acciones fuera de turno.`}`);
 }
 if (hyperTarget) hyperTarget.addEventListener("change", renderHyperObservations);
 if (hyperCharacter) hyperCharacter.addEventListener("change", () => {
