@@ -32,7 +32,10 @@ function renderSelotropObservations() {
 
 function syncSelotropSelection() {
   if (!selotropCharacter || typeof playerClasses === "undefined") return;
-  const names = Object.keys(playerClasses).filter((name) => playerClasses[name] === "eliotrope").sort();
+  const names = [...new Set([
+    ...Object.keys(playerClasses).filter((name) => playerClasses[name] === "eliotrope"),
+    ...Object.keys(selotropObservations),
+  ])].sort();
   const previous = selotropCharacter.value;
   const signature = JSON.stringify(names);
   if (selotropCharacter.dataset.candidates !== signature) {
@@ -42,7 +45,7 @@ function syncSelotropSelection() {
     if (names.includes(previous)) selotropCharacter.value = previous;
     selotropCharacter.dataset.candidates = signature;
   }
-  selotropStatus.textContent = names.length ? `${names.length} selotrop(s) detectado(s)` : "Buscando selotrop...";
+  selotropStatus.textContent = names.length ? `${names.length} personaje(s) detectado(s)` : "Buscando señales del selotrop...";
   renderSelotropObservations();
 }
 
@@ -52,27 +55,31 @@ function observeSelotropLog(line, deferRender = false) {
   const content = match[1];
   if (/^(?:Combate terminado|El combate ha terminado)\b/i.test(content)) {
     selotropObservations = Object.create(null);
-    if (!deferRender) renderSelotropObservations();
+    syncSelotropSelection();
     return;
   }
-  for (const name of Object.keys(playerClasses).filter((item) => playerClasses[item] === "eliotrope")) {
-    const prefix = `${name}: `;
-    if (!content.startsWith(prefix)) continue;
-    const event = content.slice(prefix.length);
-    const state = selotropObservations[name] || (selotropObservations[name] = {});
-    let observed = event.match(/^Portal Celestial - Contador\s*\(([^)]+)\)/i);
-    if (observed) state.portal = observed[1];
-    observed = event.match(/^Don Celestial\s*\(([^)]+)\)/i);
-    if (observed) state.don = observed[1];
-    if (/^ya no se encuentra bajo el estado ['’]Don Celestial['’]/i.test(event)) state.don = "retirado (última señal)";
-    if (/^[+-]?\d+\s+(?:PA|PM|PW)\s*\(Don Celestial\)/i.test(event)) state.resource = event;
-    if (!deferRender && name === selotropCharacter.value) renderSelotropObservations();
-  }
+  const separator = content.indexOf(": ");
+  if (separator < 1) return;
+  const name = content.slice(0, separator);
+  const event = content.slice(separator + 2);
+  const portal = event.match(/^Portal Celestial - Contador\s*\(([^)]+)\)/i);
+  const don = event.match(/^Don Celestial\s*\(([^)]+)\)/i);
+  const removed = /^ya no se encuentra bajo el estado ['’]Don Celestial['’]/i.test(event);
+  const resource = /^[+-]?\d+\s+(?:PA|PM|PW)\s*\(Don Celestial\)/i.test(event);
+  if (!portal && !don && !removed && !resource) return;
+  const isNew = !selotropObservations[name];
+  const state = selotropObservations[name] || (selotropObservations[name] = {});
+  if (portal) state.portal = portal[1];
+  if (don) state.don = don[1];
+  if (removed) state.don = "retirado (última señal)";
+  if (resource) state.resource = event;
+  if (isNew) syncSelotropSelection();
+  else if (!deferRender && name === selotropCharacter.value) renderSelotropObservations();
 }
 
 function resetSelotropObservations() {
   selotropObservations = Object.create(null);
-  renderSelotropObservations();
+  syncSelotropSelection();
 }
 
 function updateClassTrackerSelection() {

@@ -17,18 +17,23 @@ document.getElementById('app').onload=async()=>{
       '12:00:02,000 - [Información (combate)] Uno: Don Celestial (+1 niv.) (Portal Celestial)',
       '12:00:03,000 - [Información (combate)] Dos lanza el hechizo Wakmeha.',
       '12:00:04,000 - [Información (combate)] Dos: Portal Celestial - Contador (+2 niv.)',
-      '12:00:05,000 - [Información (combate)] Dos: 2 PA (Don Celestial)',''].join('\n');
+      '12:00:05,000 - [Información (combate)] Dos: 2 PA (Don Celestial)',
+      '12:00:05,500 - [Información (combate)] Tres: Don Celestial (+2 niv.) (Portal Celestial)',''].join('\n');
     await app.parseFile();
     const choose=d.getElementById('selotrop-character'),details=d.getElementById('selotrop-observations');
     choose.value='Uno';choose.dispatchEvent(new app.Event('change'));
     if(!details.textContent.includes('+3 niv.') || !details.textContent.includes('+1 niv.')) throw Error('Faltan las señales del primer personaje');
     choose.value='Dos';choose.dispatchEvent(new app.Event('change'));
     if(!details.textContent.includes('+2 niv.') || !details.textContent.includes('2 PA') || details.textContent.includes('+3 niv.')) throw Error('Se mezclaron las señales de dos personajes');
+    choose.value='Tres';choose.dispatchEvent(new app.Event('change'));
+    if(!details.textContent.includes('+2 niv.')) throw Error('No se reconoció una señal sin lanzamiento previo');
+    choose.value='Dos';choose.dispatchEvent(new app.Event('change'));
     content += "12:00:06,000 - [Información (combate)] Dos: ya no se encuentra bajo el estado 'Don Celestial'\n";
     await app.parseFile();
     if(!details.textContent.includes('retirado')) throw Error('No se reflejó la retirada observada');
     app.performReset();
     if(details.textContent.includes('+2 niv.') || details.textContent.includes('2 PA')) throw Error('No se reiniciaron las observaciones');
+    if([...choose.options].some(option=>option.value==='Tres')) throw Error('Una señal antigua siguió como personaje detectado');
     selector.value='huppermage';selector.dispatchEvent(new app.Event('change'));
     if(!d.getElementById('selotrop-panel').hidden || d.getElementById('hyper-class-panel').hidden) throw Error('No se recuperó el panel del hipermago');
     result.textContent='PRUEBA CORRECTA';
