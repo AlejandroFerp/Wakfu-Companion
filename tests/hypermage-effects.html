@@ -1,0 +1,31 @@
+<!doctype html><meta charset="utf-8"><title>Prueba de debilidad y luminiscencia</title>
+<script>localStorage.removeItem('wakfu_fight_history');localStorage.removeItem('wakfu_live_combat_state');</script>
+<iframe id="app" src="../public/index.html" width="1100" height="700"></iframe><p id="result">Comprobando...</p>
+<script>
+document.getElementById('app').onload=async()=>{
+  const app=document.getElementById('app').contentWindow,result=document.getElementById('result');
+  try {
+    app.saveFileHandleToDB=async()=>{};
+    let content='';
+    const handle={name:'wakfu_chat.log',async getFile(){return new File([content],'wakfu_chat.log');}};
+    const event=new app.Event('drop',{bubbles:true,cancelable:true});
+    Object.defineProperty(event,'dataTransfer',{value:{items:[{kind:'file',async getAsFileSystemHandle(){return handle;}}]}});
+    app.document.getElementById('drop-zone').dispatchEvent(event);await new Promise(r=>setTimeout(r,200));
+    app.detectClass('Jugador','Orbes Relucientes');
+    const append=async(time,text)=>{content+=`${time},164 - [Información (combate)] ${text}\n`;await app.parseFile();};
+    const panel=()=>app.document.getElementById('hyper-observations').textContent;
+    const target=app.document.getElementById('hyper-target');
+    await append('20:09:51','Saco de Papas: Debilidad Incandescente (Niv. 1) (Runa de fuego consumida)');
+    if(target.value!=='Saco de Papas' || !panel().includes('Debilidad: observado: Debilidad Incandescente · 20:09:51')) throw Error('No se muestra debilidad sin turno identificado');
+    await append('20:10:12','Saco de Papas: Luminiscencia (Niv. 1) (Runas consumidas)');
+    if(!panel().includes('Luminiscencia: observado: Luminiscencia · 20:10:12')) throw Error('No se muestra luminiscencia');
+    await append('20:10:15','Otro objetivo: Debilidad Aérea (Niv. 1) (Runa de fuego consumida)');
+    if(target.value!=='Otro objetivo' || !panel().includes('Debilidad Aérea · 20:10:15')) throw Error('No se seleccionó el objetivo del último estado');
+    target.value='Saco de Papas';target.dispatchEvent(new app.Event('change'));
+    if(!panel().includes('Luminiscencia · 20:10:12') || !panel().includes('Debilidad Incandescente')) throw Error('No se conservan estados por objetivo');
+    await append('20:10:20',"Saco de Papas: ya no se encuentra bajo el estado 'Luminiscencia'");
+    if(!panel().includes('Luminiscencia: retirado: Luminiscencia · 20:10:20')) throw Error('No se registra la retirada del estado');
+    result.textContent='PRUEBA CORRECTA';
+  } catch(error) {result.textContent='PRUEBA FALLIDA: '+error.message;}
+};
+</script>

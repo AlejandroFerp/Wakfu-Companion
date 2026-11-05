@@ -1,6 +1,6 @@
 // Evidence-based observations from Spanish combat logs, scoped by character.
 function createHypermageObservations() {
-  return { abundance: null, breeze: null, lastGeneratedRune: null, runes: { fire: null, water: null, air: null, earth: null }, lastBCChange: null, lastElementalCycle: null, cycleUses: null, turn: 0, turnBoundaryPending: false, estimatedTurn: false, bcFullSignal: false, effects: {} };
+  return { abundance: null, breeze: null, lastGeneratedRune: null, runes: { fire: null, water: null, air: null, earth: null }, lastBCChange: null, lastElementalCycle: null, cycleUses: null, turn: 0, turnBoundaryPending: false, estimatedTurn: false, bcFullSignal: false, effects: {}, lastEffectTarget: null, effectSerial: 0 };
 }
 
 function hyperRuneElement(name) {
@@ -38,6 +38,8 @@ function observeHypermageLine(previous, character, line) {
     next.turnBoundaryPending = false;
     next.estimatedTurn = false;
     next.effects = {};
+    next.lastEffectTarget = null;
+    next.effectSerial = 0;
     next.bcFullSignal = false;
     next.runes = { fire: null, water: null, air: null, earth: null };
     next.lastGeneratedRune = null;
@@ -47,11 +49,15 @@ function observeHypermageLine(previous, character, line) {
   const expired = content.match(/^(.+?): ya no se encuentra bajo el estado ['’](Debilidad[^']*|Luminiscencia)['’]/i);
   if (expired) {
     const key = /^Luminiscencia$/i.test(expired[2]) ? "luminiscencia" : "debilidad";
-    next.effects = { ...previous.effects, [expired[1]]: { ...(previous.effects[expired[1]] || {}), [key]: { turn: previous.turn, name: expired[2], active: false } } };
+    next.effects = { ...previous.effects, [expired[1]]: { ...(previous.effects[expired[1]] || {}), [key]: { turn: previous.turn, name: expired[2], active: false, time: match[0].slice(0, 8) } } };
+    next.lastEffectTarget = expired[1];
+    next.effectSerial = previous.effectSerial + 1;
   }
   const effect = content.match(/^(.+?): (Debilidad[^:]*|Luminiscencia) \(Niv\. \d+\)(?: \(([^)]+)\))?/i);
   if (effect && (!/^Luminiscencia$/i.test(effect[2]) || /^Runas consumidas$/i.test(effect[3] || ""))) {
-    next.effects = { ...previous.effects, [effect[1]]: { ...(previous.effects[effect[1]] || {}), [/^Luminiscencia$/i.test(effect[2]) ? "luminiscencia" : "debilidad"]: { turn: previous.turn, name: effect[2], active: true } } };
+    next.effects = { ...previous.effects, [effect[1]]: { ...(previous.effects[effect[1]] || {}), [/^Luminiscencia$/i.test(effect[2]) ? "luminiscencia" : "debilidad"]: { turn: previous.turn, name: effect[2], active: true, time: match[0].slice(0, 8) } } };
+    next.lastEffectTarget = effect[1];
+    next.effectSerial = previous.effectSerial + 1;
   }
   const prefix = `${character}: `;
   const wispPrefix = `[${character}] Fuego fatuo: Guardado `;

@@ -30,6 +30,10 @@ function renderHyperObservations() {
     if (targets.includes(previousTarget)) hyperTarget.value = previousTarget;
     hyperTarget.dataset.targets = JSON.stringify(targets);
   }
+  if (hyperTarget.dataset.effectSerial !== String(hyperObserved.effectSerial)) {
+    if (hyperObserved.lastEffectTarget && targets.includes(hyperObserved.lastEffectTarget)) hyperTarget.value = hyperObserved.lastEffectTarget;
+    hyperTarget.dataset.effectSerial = String(hyperObserved.effectSerial);
+  }
   hyperPanel.replaceChildren();
   const add = (parent, tag, className, text) => { const el = document.createElement(tag); el.className = className; if (text !== undefined) el.textContent = text; parent.appendChild(el); return el; };
   const runes = add(hyperPanel, "div", "class-runes");
@@ -53,11 +57,12 @@ function renderHyperObservations() {
     const item = observed[key];
     const recent = item && item.active && item.turn > 0 && item.turn === hyperObserved.turn && hyperObserved.estimatedTurn;
     const inactive = item && item.active === false;
-    const status = inactive ? "retirado" : recent ? "observado desde el turno estimado" : item ? "duración por comprobar" : "sin información";
+    const detail = item ? `${item.name}${item.time ? ` · ${item.time}` : ""}` : "";
+    const status = inactive ? `retirado: ${detail}` : item ? `observado: ${detail}${recent ? "" : " · duración desconocida"}` : "sin información";
     const badge = add(indicators, "span", `class-effect ${recent ? "is-active" : inactive ? "" : "is-unknown"}`);
     add(badge, "span", "class-effect-icon", key === "debilidad" ? "✦" : "☼");
     add(badge, "span", "", `${label}: ${status}`);
-    badge.title = "Estado observado en el registro; el autor no está confirmado.";
+    badge.title = "Última línea observada en este objetivo. La duración y el autor no siempre están confirmados.";
   }
   add(hyperPanel, "p", "class-note", `${last ? "Borde dorado: última runa guardada observada. " : ""}${hyperObserved.bcFullSignal ? "Última señal: BC lleno. " : ""}${cost === null ? "Esperando un posible turno del personaje; el registro no identifica el turno con certeza." : cost === "agotado" ? "Turno estimado: cinco lanzamientos registrados. Puede haber acciones fuera de turno." : `Turno estimado por el primer hechizo tras un cambio de turno: ${hyperObserved.cycleUses}/5 lanzamientos registrados. Puede haber acciones fuera de turno.`}`);
 }

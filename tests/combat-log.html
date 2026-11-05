@@ -43,7 +43,7 @@ document.getElementById('app').onload = async () => {
     if (rows.length !== 15 || rows.map(x => x.dataset.type).join(',') !== 'cast,damage,resource,state,damage,summon,movement,state,state,resource,other,cast,state,other,state') throw Error('Eventos o categorías incorrectos');
     if (!app.document.getElementById('hyper-observations').textContent.includes('Abundancia: 60')) throw Error('Observación de abundancia incorrecta');
     if (!app.document.getElementById('hyper-observations').textContent.includes('Próximo ciclo estimado: 50 BC')) throw Error('Coste de ciclo incorrecto');
-    if (!app.document.getElementById('hyper-observations').textContent.includes('Luminiscencia: observado desde el turno estimado')) throw Error('Luminiscencia no detectada');
+    if (!app.document.getElementById('hyper-observations').textContent.includes('Luminiscencia: observado: Luminiscencia · 12:00:03')) throw Error('Luminiscencia no detectada');
     if (!app.document.querySelector('.class-rune.is-last.is-active')?.textContent.includes('Fuego')) throw Error('Última runa de fuego no marcada');
     if (!rows[1].textContent.includes('-1.234 PdV')) throw Error('Texto original perdido');
     if (!rows[0].querySelector('[aria-label="Crítico"]')) throw Error('Falta el indicador de crítico');
