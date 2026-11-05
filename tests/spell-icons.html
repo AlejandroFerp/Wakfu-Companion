@@ -1,0 +1,35 @@
+<!doctype html><meta charset="utf-8"><title>Prueba de iconos locales</title>
+<script>localStorage.removeItem('wakfu_fight_history');localStorage.removeItem('wakfu_live_combat_state');localStorage.removeItem('wakfu_local_spell_icons');localStorage.setItem('wakfu_local_spell_descriptions',JSON.stringify({'Piratería':'Descripción de prueba'}));</script>
+<iframe id="app" src="../public/index.html" width="1000" height="600"></iframe><p id="result">Comprobando...</p>
+<script>
+document.getElementById('app').onload=async()=>{
+  const app=document.getElementById('app').contentWindow,result=document.getElementById('result');
+  try{
+    app.saveFileHandleToDB=async()=>{};let content='';
+    const handle={name:'wakfu_chat.log',async getFile(){return new File([content],'wakfu_chat.log');}};
+    const drop=new app.Event('drop',{bubbles:true,cancelable:true});
+    Object.defineProperty(drop,'dataTransfer',{value:{items:[{kind:'file',async getAsFileSystemHandle(){return handle;}}]}});
+    app.document.getElementById('drop-zone').dispatchEvent(drop);await new Promise(r=>setTimeout(r,200));
+    content='12:00:00,000 - [Información (combate)] Jugador lanza el hechizo Piratería.\n12:00:01,000 - [Información (combate)] Objetivo: -50 PdV (agua)\n';
+    await app.parseFile();
+    const d=app.document,input=d.getElementById('combat-icon-import');
+    const png='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=';
+    const json=JSON.stringify({version:1,iconos:{'Piratería':png,'Inválido':'data:image/svg+xml;base64,AAAA'}});
+    const transfer=new app.DataTransfer();transfer.items.add(new app.File([json],'iconos.json',{type:'application/json'}));input.files=transfer.files;
+    input.dispatchEvent(new app.Event('change'));await new Promise(r=>setTimeout(r,200));
+    const row=d.querySelector('.combat-log-event[data-type="cast"]');
+    if(!row.querySelector('.combat-spell-icon') || row.title!=='Descripción de prueba') throw Error('Falta el icono o la descripción en la cronología');
+    const saved=JSON.parse(app.localStorage.getItem('wakfu_local_spell_icons') || '{}');
+    if(saved['Piratería']!==png || saved['Inválido']) throw Error('La importación no validó los iconos');
+    d.querySelector('.player-block[data-name="Jugador"] .player-row').click();
+    const personal=d.querySelector('.personal-combat-log');
+    if(!personal.querySelector('.combat-spell-icon') || ![...personal.children].some(entry=>entry.title==='Descripción de prueba')) throw Error('Falta el icono o la descripción en el registro personal');
+    content+='12:00:02,000 - [Información (combate)] Jugador lanza el hechizo Piratería.\n';await app.parseFile();
+    const rows=d.querySelectorAll('.combat-log-event[data-type="cast"]');
+    if(rows.length!==2 || !rows[1].querySelector('.combat-spell-icon')) throw Error('No se mostró el icono en un lanzamiento posterior');
+    const panels=d.querySelector('.panels-container');panels.scrollTop=panels.scrollHeight;
+    if(d.getElementById('combat-log-list').getBoundingClientRect().bottom > panels.getBoundingClientRect().bottom+1) throw Error('El registro quedó cortado en una ventana pequeña');
+    result.textContent='PRUEBA CORRECTA';
+  }catch(error){result.textContent='PRUEBA FALLIDA: '+error.message;}
+};
+</script>

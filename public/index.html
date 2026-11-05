@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nexus Wakfu Companion</title>
-    <link rel="stylesheet" href="assets/css/style.css?v=4" />
+    <link rel="stylesheet" href="assets/css/style.css?v=8" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
   </head>
   <body>
@@ -214,7 +214,7 @@
         </div>
 
         <!-- 3. Registro cronológico -->
-        <div class="tool-panel">
+        <div class="tool-panel combat-log-panel">
           <div class="panel-header">
             <span class="header-label">Registro de combate</span>
             <button id="combat-log-clear" type="button" style="margin-left:auto">Limpiar</button>
@@ -224,10 +224,12 @@
             <label>Tipo <select id="combat-log-type"><option value="all">Todos</option><option value="cast">Hechizos</option><option value="damage">Daño</option><option value="heal">Curas</option><option value="armor">Armadura</option><option value="resource">Recursos</option><option value="state">Estados</option><option value="movement">Movimiento</option><option value="summon">Invocaciones</option><option value="other">Otros</option></select></label>
             <label>Buscar <input id="combat-log-search" type="search" placeholder="Personaje, hechizo o efecto" /></label>
           </div>
-          <div class="combat-log-reference">
+          <details class="combat-log-reference"><summary>Datos locales de hechizos</summary>
             <label>Descripciones locales <input id="combat-spell-import" type="file" accept=".json,application/json" /></label>
             <span id="combat-spell-status">Opcional: importa las descripciones de tu juego.</span>
-          </div>
+            <label>Iconos locales <input id="combat-icon-import" type="file" accept=".json,application/json" /></label>
+            <span id="combat-icon-status">Opcional: importa los iconos de tu juego.</span>
+          </details>
           <div id="combat-log-list" role="log" aria-label="Registro de combate" aria-live="off">
             <div class="empty-state">Esperando eventos de combate...</div>
           </div>
@@ -831,11 +833,11 @@
     <script src="assets/js/modules/chat.js"></script>
     <script src="assets/js/modules/hypermageRules.js?v=4"></script>
     <script src="assets/js/modules/selotrop.js?v=3"></script>
-    <script src="assets/js/modules/combatLog.js?v=11"></script>
+    <script src="assets/js/modules/combatLog.js?v=13"></script>
     <script src="assets/js/modules/combat.js?v=14"></script>
     <script src="assets/js/modules/tracker.js"></script>
     <script src="assets/js/modules/forecast.js"></script>
-    <script src="assets/js/modules/ui.js?v=8"></script>
+    <script src="assets/js/modules/ui.js?v=9"></script>
 
     <!-- Core -->
     <script src="assets/js/core/professions.js"></script>

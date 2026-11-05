@@ -5,6 +5,8 @@ const combatLogType = document.getElementById("combat-log-type");
 const combatLogSearch = document.getElementById("combat-log-search");
 const combatSpellImport = document.getElementById("combat-spell-import");
 const combatSpellStatus = document.getElementById("combat-spell-status");
+const combatIconImport = document.getElementById("combat-icon-import");
+const combatIconStatus = document.getElementById("combat-icon-status");
 const MAX_COMBAT_LOG_EVENTS = 1000;
 const hyperCharacter = document.getElementById("hyper-character");
 const hyperPanel = document.getElementById("hyper-observations");
@@ -97,13 +99,35 @@ function syncHypermageSelection() {
 let combatSpellDescriptions = {};
 try { combatSpellDescriptions = JSON.parse(localStorage.getItem("wakfu_local_spell_descriptions") || "{}"); } catch (_) {}
 
+let combatSpellIcons = {};
+try { const saved = JSON.parse(localStorage.getItem("wakfu_local_spell_icons") || "{}"); if (saved && typeof saved === "object" && !Array.isArray(saved)) combatSpellIcons = saved; } catch (_) {}
+
+function getCombatSpellDescription(name) {
+  const description = combatSpellDescriptions[name];
+  return typeof description === "string" ? description : "";
+}
+
+function getCombatSpellIcon(name) {
+  const icon = combatSpellIcons[name];
+  return typeof icon === "string" && icon.length <= 20000 && /^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(icon) ? icon : null;
+}
+
 function describeCombatSpell(row, text) {
   const cast = text.match(/^.*? lanza (?:el hechizo|el sortilegio) (.*?)(?:\.(?=$|\s\()|(?=\s\()|$)/i);
   if (!cast) return;
-  const description = combatSpellDescriptions[cast[1].trim()];
-  if (typeof description === "string" && description) {
-    row.title = description;
-    row.classList.add("combat-log-has-description");
+  const name = cast[1].trim();
+  const description = getCombatSpellDescription(name);
+  row.title = description;
+  row.classList.toggle("combat-log-has-description", Boolean(description));
+  const oldIcon = row.querySelector(".combat-spell-icon");
+  if (oldIcon) oldIcon.remove();
+  const source = getCombatSpellIcon(name);
+  if (source) {
+    const icon = document.createElement("img");
+    icon.className = "combat-spell-icon";
+    icon.src = source;
+    icon.alt = "";
+    row.insertBefore(icon, row.querySelector(".combat-log-badge"));
   }
 }
 
@@ -126,10 +150,37 @@ if (combatSpellImport) combatSpellImport.addEventListener("change", async () => 
     localStorage.setItem("wakfu_local_spell_descriptions", JSON.stringify(clean));
     combatSpellDescriptions = clean;
     for (const row of combatLogList.querySelectorAll('.combat-log-event[data-type="cast"]')) describeCombatSpell(row, row.dataset.message);
+    if (typeof renderMeter === "function") { lastRenderSignature = ""; renderMeter(); }
     updateSpellStatus();
   } catch (err) { combatSpellStatus.textContent = `No se pudieron cargar las descripciones: ${err.message}`; }
 });
 if (combatSpellStatus) updateSpellStatus();
+
+function updateCombatIconStatus() {
+  if (!combatIconStatus) return;
+  const count = Object.keys(combatSpellIcons).length;
+  combatIconStatus.textContent = count ? `${count} iconos locales cargados.` : "Opcional: importa los iconos de tu juego.";
+}
+
+if (combatIconImport) combatIconImport.addEventListener("change", async () => {
+  const file = combatIconImport.files[0];
+  if (!file) return;
+  try {
+    if (file.size > 5000000) throw new Error("El archivo es demasiado grande.");
+    const data = JSON.parse(await file.text());
+    if (data.version !== 1 || !data.iconos || typeof data.iconos !== "object" || Array.isArray(data.iconos)) throw new Error("Formato de archivo incorrecto.");
+    const clean = Object.create(null);
+    for (const [name, icon] of Object.entries(data.iconos)) {
+      if (name.length <= 300 && typeof icon === "string" && icon.length <= 20000 && /^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(icon)) clean[name] = icon;
+    }
+    localStorage.setItem("wakfu_local_spell_icons", JSON.stringify(clean));
+    combatSpellIcons = clean;
+    for (const row of combatLogList.querySelectorAll('.combat-log-event[data-type="cast"]')) describeCombatSpell(row, row.dataset.message);
+    if (typeof renderMeter === "function") { lastRenderSignature = ""; renderMeter(); }
+    updateCombatIconStatus();
+  } catch (err) { combatIconStatus.textContent = `No se pudieron cargar los iconos: ${err.message}`; }
+});
+updateCombatIconStatus();
 
 function classifyCombatEvent(text) {
   if (/\blanza (?:el hechizo|el sortilegio)\b/i.test(text)) return "cast";
@@ -200,7 +251,6 @@ function appendCombatLog(line) {
   const type = classifyCombatEvent(match[2]);
   row.dataset.type = type;
   row.dataset.message = match[2];
-  if (type === "cast") describeCombatSpell(row, match[2]);
   const time = document.createElement("time");
   time.textContent = match[1];
   const message = document.createElement("span");
@@ -209,6 +259,7 @@ function appendCombatLog(line) {
   badge.className = `combat-log-badge combat-log-${type}`;
   badge.textContent = { cast: "Hechizo", damage: "Daño", heal: "Cura", armor: "Armadura", resource: "Recurso", state: "Estado", movement: "Movimiento", summon: "Invocación", other: "Evento" }[type];
   row.append(time, badge);
+  if (type === "cast") describeCombatSpell(row, match[2]);
   for (const [symbol, label] of combatEventIndicators(match[2])) {
     const indicator = document.createElement("span");
     indicator.className = "combat-log-indicator";

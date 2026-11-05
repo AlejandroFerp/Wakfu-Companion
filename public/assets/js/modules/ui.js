@@ -260,7 +260,16 @@ function renderMeter() {
           const entry = document.createElement("div");
           const turn = event.turn ? `Turno ${event.turn} (marcado)` : "Turno sin identificar";
           const description = event.type === "cast" ? `Lanza ${event.spell}` : event.type === "damage" ? `${event.spell}: ${event.amount.toLocaleString()} de daño atribuido` : event.type === "affected" ? `Evento sobre el personaje: ${event.message}` : "Inicio de turno marcado";
-          entry.textContent = `${event.time || "--:--:--"} · ${turn} · ${description}`;
+          const abilityIcon = event.spell && typeof getCombatSpellIcon === "function" ? getCombatSpellIcon(event.spell) : null;
+          if (abilityIcon) {
+            const icon = document.createElement("img");
+            icon.className = "combat-spell-icon";
+            icon.src = abilityIcon;
+            icon.alt = "";
+            entry.appendChild(icon);
+          }
+          if (event.spell && typeof getCombatSpellDescription === "function") entry.title = getCombatSpellDescription(event.spell) || "";
+          entry.appendChild(document.createTextNode(`${event.time || "--:--:--"} · ${turn} · ${description}`));
           log.appendChild(entry);
         }
         detail.appendChild(log);
@@ -281,12 +290,14 @@ function renderMeter() {
           const spellContribPercent =
             p.total > 0 ? ((s.val / p.total) * 100).toFixed(1) + "%" : "0.0%";
           let iconName = (s.element || "neutral").toLowerCase();
+          const abilityIcon = typeof getCombatSpellIcon === "function" ? getCombatSpellIcon(s.realName) : null;
 
           spellsHtml += `
                 <div class="spell-row">
                     <div class="spell-bg-bar" style="width: ${spellBarPercent}%"></div>
                     <div class="spell-info">
                         <img src="./assets/img/elements/${escapeMeterText(iconName)}.png" class="spell-icon" onerror="this.src='./assets/img/elements/neutral.png'">
+                        ${abilityIcon ? `<img src="${escapeMeterText(abilityIcon)}" class="combat-spell-icon" alt="">` : ""}
                         <span class="spell-name">${escapeMeterText(s.realName)}</span>
                     </div>
                     <div class="spell-val">${s.val.toLocaleString()}</div>
