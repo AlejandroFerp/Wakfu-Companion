@@ -84,7 +84,7 @@ th.cat{background:color-mix(in srgb,var(--cat) 26%,var(--panel));color:var(--cat
 #detail button{background:none;border:1px solid var(--line);color:var(--mut);border-radius:5px;padding:2px 8px;cursor:pointer;font:inherit;font-size:12px}
 #detail button:hover{color:var(--tx);border-color:var(--mut)}
 </style></head><body>
-<header><h1>Informe de combates de Wakfu</h1><span class="mut">Vista de Leo</span>
+<header><h1>Informe de combates de Wakfu</h1>
 <button class="btn" id="connected" type="button" hidden>Actualizar registro conectado</button>
 <label class="btn file-button">Abrir logs<input id="f" type="file" multiple></label><label style="cursor:pointer"><input id="pets" type="checkbox" checked> Sumar las mascotas a su dueño</label><span id="meta"></span></header>
 <div id="empty">Arrastra tu <b>wakfu_chat.log</b> (o varios a la vez: .1, .2…) a cualquier parte de esta página. Los logs se encuentran en "%AppData%\zaap\gamesLogs\wakfu\logs\"<br><br>
@@ -160,7 +160,10 @@ function parse(text){
       if(!fa){fa=true;spl(u,spell).effC++}} // a cast "lands" per effect type; effC = cast had any effect
   }
   flush();
-  if(F&&F.has){F.dur=Math.max(1,F.t1-F.t0);fights.push(F)}
+  if(F&&F.t0!==null){
+    F.dur=Math.max(1,F.t1-F.t0);
+    fights.current=F;
+  }
   fights.zones=fights.map((_,i)=>{const z=zones.find(z=>z.after>i);return z?z.name:""}); // dungeon = the next chest after this fight
   return fights;
 }
@@ -263,13 +266,17 @@ function fightName(F){
     return Object.entries(agg).sort((a,b)=>b[1]-a[1])[0]};
   const t=pick("dmg")||pick("taken");return t?t[0]:null;
 }
-function load(text,name,info){
+function load(text,name,info,connected=false){
   const fights = parse(text);
-  if(!fights.length){$("meta").textContent="No se han encontrado combates en "+name;return}
+  if(!fights.length&&!fights.current){$("meta").textContent="No se han encontrado combates en "+name;return}
   S.fights=fights;S.zones=fights.zones||[];S.zoneOv={};S.off=new Set();
   // teams and pets are worked out from every fight, so hiding a fight never changes who is a player
-  S.full=merge(S.fights);S.owner=ownerMap(S.full);S.players=guessPlayers(S.full);S.sel=0;S.unit=null;
-  $("meta").textContent=`${name} · ${S.fights.length} ${S.fights.length === 1 ? "combate" : "combates"}`;
+  S.full=merge(fights.current?[...fights,fights.current]:fights);
+  S.owner=ownerMap(S.full);S.players=guessPlayers(S.full);
+  S.sel=fights.current?fights.length+1:fights.length-1;
+  S.currentLabel=connected?"Combate actual":"Último combate sin cierre";
+  S.unit=null;
+  $("meta").textContent=`${name} · ${fights.length} ${fights.length===1?"combate anterior":"combates anteriores"}`;
   $("order").textContent=info||"";$("order").hidden=!info;
   $("empty").hidden=true;$("main").hidden=false;draw();
 }
@@ -281,12 +288,17 @@ function draw(){
   const zone=i=>S.zoneOv[i]??S.zones[i]??"";
   const incl=S.fights.filter((_,i)=>!S.off.has(i));S.all=merge(incl);
   const list=[...S.fights.map((F,i)=>[F,`${i+1}. ${esc(fightName(F)||"Combate")}`,`${F.clock} · ${mmss(F.dur)}`,zone(i)]),[S.all,"Todos los combates",`${incl.length} de ${S.fights.length} incluidos · ${mmss(S.all.dur)}`]];
-  const base=S.sel<S.fights.length?S.fights[S.sel]:S.all;
+  const current=S.fights.current;
+  const currentIndex=S.fights.length+1;
+  if(current)list.push([current,S.currentLabel,`${current.clock} · Sin cierre en el registro`]);
+  const base=S.sel===currentIndex&&current?current:S.fights[S.sel]||S.all;
   const ct=Object.create(null);(base===S.all?incl:[base]).forEach(F=>{const c=charTurns(F);for(const k in c)ct[k]=(ct[k]||0)+c[k]});
   const cur=applyPets(base,ct,S.pets);
   const kids=S.pets&&S.unit?Object.keys(base.units).filter(n=>n!==S.unit&&S.players.has(S.unit)&&rootOf(n)===S.unit):[];
-  $("tabs").innerHTML=list.map(([F,a,b,z],i)=>`<button data-i="${i===S.fights.length?S.fights.length:i}" class="${(i===S.sel||(i===S.fights.length&&S.sel>=S.fights.length))?"on":""}${S.off.has(i)?" off":""}">${z?`<small class="zone">${esc(z)}</small>`:""}<b>${a}</b><small>${b}</small></button>`).join("");
-  const names=Object.keys(cur.units).filter(n=>{const u=cur.units[n];return u.dmg||u.heal||u.armor||u.taken});
+  const tabs=list.map(([F,a,b,z],i)=>`<button data-i="${i}" class="${i===S.sel?"on":""}${S.off.has(i)?" off":""}">${z?`<small class="zone">${esc(z)}</small>`:""}<b>${a}</b><small>${b}</small></button>`);
+  if(current)tabs.unshift(tabs.pop());
+  $("tabs").innerHTML=tabs.join("");
+  const names=Object.keys(cur.units).filter(n=>{const u=cur.units[n];return u.dmg||u.heal||u.armor||u.taken||(base===current&&u.casts)});
   const group=p=>names.filter(n=>S.players.has(n)===p).sort((a,b)=>{const{k,d}=S.usort,A=cur.units[a],B=cur.units[b];
     const v=(x,n)=>k==="name"?n:k==="dpt"?(x.turns?x.dmg/x.turns:0):x[k];
     const x=v(A,a),y=v(B,b);return (k==="name"?x.localeCompare(y,"es"):x-y)*d||B.dmg-A.dmg});
@@ -302,7 +314,7 @@ function draw(){
   }else html=tbl("Jugadores","p","var(--acc)",group(true))+tbl("Enemigos","e","var(--dmg)",group(false))+'<p class="mut" style="font-size:12px">Haz clic en una unidad para ver sus hechizos.</p>';
   const fh=S.sel<S.fights.length?`<div class="fh"><span class="mut">Zona de este combate:</span> <b>${esc(zone(S.sel)||"sin zona")}</b> <button data-zone="1">✎ cambiar zona</button> <label><input type="checkbox" data-inc="${S.sel}" ${S.off.has(S.sel)?"":"checked"}> Incluir en el total</label></div>`:"";
   const ob=document.querySelector(".incbox"),oy=ob?ob.scrollTop:0,wy=window.scrollY; // keep scroll positions when the view is redrawn
-  $("main").innerHTML=fh+(S.sel>=S.fights.length&&!S.unit?incPanel(zone,incl):"")+html;
+  $("main").innerHTML=fh+(base===S.all&&!S.unit?incPanel(zone,incl):"")+html;
   const nb=document.querySelector(".incbox");if(nb)nb.scrollTop=oy;
   if(window.scrollY!==wy)scrollTo(0,wy);
 }
@@ -416,7 +428,7 @@ function orderFiles(items){
   rec([],items);return best;
 }
 let importVersion = 0;
-async function pick(files){
+async function pick(files,connected=false){
   files=[...files];if(!files.length)return;
   const version = ++importVersion;
   $("meta").textContent = "Leyendo registros…";
@@ -432,7 +444,7 @@ async function pick(files){
   if(ord.length>1){info="Orden de los archivos: "+ord.map(x=>x.name).join(" → ");
     for(let i=1;i<ord.length;i++){const g=gap(ord[i-1],ord[i]);
       if(g>600)info+=` · ⚠ hay ${Math.round(g/60)} min entre ${ord[i-1].name} y ${ord[i].name}: puede faltar un archivo`}}
-  load(ord.map(x=>x.text.endsWith("\n")?x.text:x.text+"\n").join(""),ord.length>1?`${ord.length} archivos`:ord[0].name,info);
+  load(ord.map(x=>x.text.endsWith("\n")?x.text:x.text+"\n").join(""),ord.length>1?`${ord.length} archivos`:ord[0].name,info,connected);
 }
 $("f").onchange=e=>{const fl=[...e.target.files];e.target.value="";acceptConnectedFile=false;pick(fl)};
 addEventListener("dragover",e=>{e.preventDefault();document.body.classList.add("drag")});
@@ -451,7 +463,7 @@ if (parent !== window && document.referrer) {
     if (event.source !== parent || event.origin !== hostOrigin) return;
     const { type, connected, file } = event.data || {};
     if (type === "wakfu-report-status") $("connected").hidden = !connected;
-    if (type === "wakfu-report-file" && acceptConnectedFile && file instanceof File) pick([file]);
+    if (type === "wakfu-report-file" && acceptConnectedFile && file instanceof File) pick([file],true);
     if (type === "wakfu-report-error" && acceptConnectedFile) $("meta").textContent = "No se ha podido abrir el registro conectado. Puedes elegir el archivo.";
   });
   parent.postMessage({ type: "wakfu-report-ready" }, hostOrigin);
