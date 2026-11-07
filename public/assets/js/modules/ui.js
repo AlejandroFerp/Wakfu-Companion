@@ -527,7 +527,7 @@ function switchMeterMode(mode) {
 
   if (details) {
     if (!report.hasAttribute("src")) report.src = report.dataset.src;
-    else report.contentWindow.postMessage({ type: "wakfu-report-status", connected: Boolean(fileHandle) }, "*");
+    else report.contentWindow.postMessage({ type: "wakfu-report-visible", connected: Boolean(fileHandle) }, "*");
     return;
   }
 

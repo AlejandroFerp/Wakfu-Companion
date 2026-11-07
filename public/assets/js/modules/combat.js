@@ -1393,7 +1393,11 @@ async function parseFile() {
 
   try {
 
-    const file = await fileHandle.getFile();
+    const handle = fileHandle;
+    const file = await handle.getFile();
+    if (fileHandle === handle && typeof publishCombatDetailsFile === "function") {
+      publishCombatDetailsFile(file, handle);
+    }
 
 
 

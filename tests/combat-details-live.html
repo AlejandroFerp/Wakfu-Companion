@@ -1,0 +1,34 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Live combat details regression test</title>
+<button id="hit" disabled>Append hit</button>
+<button id="end" disabled>End combat</button>
+<iframe id="app" title="Wakfu Companion" src="../public/index.html?test=live-details" width="1200" height="700"></iframe>
+<script>
+  document.getElementById("app").onload = async () => {
+    const app = document.getElementById("app").contentWindow;
+    const line = (time, text) => `12:00:${time},000 - [Información (combate)] ${text}\n`;
+    let content = line("00", "Jugador lanza el hechizo Piratería.") + line("01", "Objetivo: -100 PdV (fuego)");
+    const handle = { name: "wakfu_chat.log", async getFile() { return new File([content], this.name); } };
+    app.saveFileHandleToDB = async () => {};
+    const startTracking = app.startTracking;
+    const connected = new Promise(resolve => {
+      app.startTracking = async function (handle) {
+        app.startTracking = startTracking;
+        await startTracking(handle);
+        resolve();
+      };
+    });
+    const drop = new app.Event("drop", { bubbles: true, cancelable: true });
+    Object.defineProperty(drop, "dataTransfer", {
+      value: { items: [{ kind: "file", async getAsFileSystemHandle() { return handle; } }] },
+    });
+    app.document.getElementById("drop-zone").dispatchEvent(drop);
+    await connected;
+    const hit = document.getElementById("hit");
+    const end = document.getElementById("end");
+    hit.onclick = async () => { content += line("02", "Objetivo: -25 PdV (fuego)"); hit.disabled = true; await app.parseFile(); };
+    end.onclick = async () => { content += line("03", "Combate terminado."); end.disabled = true; await app.parseFile(); };
+    hit.disabled = end.disabled = false;
+  };
+</script>

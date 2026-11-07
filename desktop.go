@@ -7,6 +7,7 @@ import (
 	"embed"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"io/fs"
 	"log"
 	"net"
@@ -14,6 +15,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -46,14 +49,7 @@ func main() {
 	}
 	prefix := "/" + token + "/"
 	mux := http.NewServeMux()
-	mux.HandleFunc(prefix+"api/log", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "GET" {
-			http.Error(w, "Method not allowed", 405)
-			return
-		}
-		w.Header().Set("Cache-Control", "no-store")
-		http.ServeFile(w, r, logPath)
-	})
+	mux.HandleFunc(prefix+"api/log", combatLogHandler(logPath))
 	mux.HandleFunc(prefix+"desktop.js", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
 		fmt.Fprint(w, desktopJS)
@@ -92,12 +88,132 @@ func main() {
 	if _, err = os.Stat(edge); err != nil {
 		log.Fatal("Microsoft Edge no encontrado: ", err)
 	}
-	profile := filepath.Join(appdata, "WakfuCompanionDesktop", "EdgeProfile")
+	profile := filepath.Join(appdata, "WakfuCompanionDesktop", "EdgeAppProfile")
 	if err = exec.Command(edge, "--app="+url, "--user-data-dir="+profile, "--no-first-run").Start(); err != nil {
 		log.Fatal(err)
 	}
 	log.Printf("Wakfu Companion abierto. Cierra la aplicación con el botón Salir. Ruta local: %s", url)
 	log.Fatal(http.Serve(listener, mux))
+}
+
+func combatLogHandler(logPath string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		w.Header().Set("Cache-Control", "no-store")
+		if r.URL.Query().Get("view") == "report" {
+			data, err := readCombatReportLog(logPath)
+			if err != nil {
+				http.Error(w, "Combat log temporarily unavailable", http.StatusServiceUnavailable)
+				return
+			}
+			w.Header().Set("Content-Type", "application/octet-stream")
+			w.Write(data)
+			return
+		}
+		http.ServeFile(w, r, logPath)
+	}
+}
+
+func readCombatReportLog(logPath string) ([]byte, error) {
+	active, start, err := snapshotActiveCombatLog(logPath)
+	if err != nil {
+		return nil, err
+	}
+	var report bytes.Buffer
+	if err := appendArchivedCombatLogs(&report, logPath); err != nil {
+		return nil, err
+	}
+	// If Wakfu rotated the file during the read, the archives and active file may overlap.
+	end, err := os.Stat(logPath)
+	if err != nil {
+		return nil, err
+	}
+	if !os.SameFile(start, end) || end.Size() < start.Size() {
+		return nil, fmt.Errorf("combat log rotated during report read")
+	}
+	report.Write(active)
+	return report.Bytes(), nil
+}
+
+func snapshotActiveCombatLog(logPath string) ([]byte, fs.FileInfo, error) {
+	// Release the active file before reading archives so Windows can rename it.
+	current, err := os.Open(logPath)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer current.Close()
+	start, err := current.Stat()
+	if err != nil {
+		return nil, nil, err
+	}
+	var active bytes.Buffer
+	if _, err := io.CopyN(&active, current, start.Size()); err != nil {
+		return nil, nil, err
+	}
+	return active.Bytes(), start, nil
+}
+
+func appendArchivedCombatLogs(report *bytes.Buffer, logPath string) error {
+	dir := filepath.Dir(logPath)
+	prefix := filepath.Base(logPath) + "."
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+	type archive struct {
+		entry  os.DirEntry
+		number uint64
+	}
+	var archives []archive
+	for _, entry := range entries {
+		suffix, matches := strings.CutPrefix(entry.Name(), prefix)
+		if !matches || !entry.Type().IsRegular() {
+			continue
+		}
+		number, err := strconv.ParseUint(suffix, 10, 64)
+		if err == nil && number > 0 && strconv.FormatUint(number, 10) == suffix {
+			archives = append(archives, archive{entry, number})
+		}
+	}
+	sort.Slice(archives, func(i, j int) bool { return archives[i].number > archives[j].number })
+	for _, archive := range archives {
+		info, err := archive.entry.Info()
+		if err != nil {
+			return err
+		}
+		if !info.Mode().IsRegular() {
+			return fmt.Errorf("archived combat log is no longer a regular file")
+		}
+		if err := appendCombatLogArchive(report, filepath.Join(dir, archive.entry.Name()), info); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func appendCombatLogArchive(report *bytes.Buffer, path string, expected fs.FileInfo) error {
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	info, err := file.Stat()
+	if err != nil {
+		return err
+	}
+	if !os.SameFile(expected, info) {
+		return fmt.Errorf("archived combat log rotated during report read")
+	}
+	if _, err := io.CopyN(report, file, info.Size()); err != nil {
+		return err
+	}
+	if data := report.Bytes(); info.Size() > 0 && data[len(data)-1] != '\n' {
+		report.WriteByte('\n')
+	}
+	return nil
 }
 
 const desktopJS = `
@@ -108,7 +224,16 @@ window.addEventListener('DOMContentLoaded', () => {
  quit.style.cssText = 'position:fixed;right:12px;bottom:12px;z-index:9999;background:#173541;color:white;border:1px solid #00d5ff;border-radius:5px;padding:8px;cursor:pointer';
  quit.onclick = async () => { try { await fetch(new URL('api/quit',base),{method:'POST'}); } finally { window.close(); document.body.innerHTML='<p style="color:white;padding:2em">Aplicación cerrada. Puedes cerrar esta ventana.</p>'; } };
  document.body.appendChild(quit);
- const handle = { name:'wakfu_chat.log', async getFile() { const r=await fetch(new URL('api/log',base),{cache:'no-store'}); if (!r.ok) throw new Error('No se puede leer wakfu_chat.log ('+r.status+')'); return new File([await r.arrayBuffer()],'wakfu_chat.log'); } };
+ async function readLog(path) {
+   const response = await fetch(new URL(path, base), { cache: 'no-store' });
+   if (!response.ok) throw new Error('No se puede leer wakfu_chat.log (' + response.status + ')');
+   return new File([await response.arrayBuffer()], 'wakfu_chat.log');
+ }
+ const handle = {
+   name: 'wakfu_chat.log',
+   getFile: () => readLog('api/log'),
+   getReportFile: () => readLog('api/log?view=report'),
+ };
  async function connect(){
    try {
      const file=await handle.getFile(); fileHandle=handle; resetLogReader();

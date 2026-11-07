@@ -266,16 +266,29 @@ function fightName(F){
     return Object.entries(agg).sort((a,b)=>b[1]-a[1])[0]};
   const t=pick("dmg")||pick("taken");return t?t[0]:null;
 }
-function load(text,name,info,connected=false){
+function load(text,name,info,connected=false,automatic=false){
   const fights = parse(text);
   if(!fights.length&&!fights.current){$("meta").textContent="No se han encontrado combates en "+name;return}
-  S.fights=fights;S.zones=fights.zones||[];S.zoneOv={};S.off=new Set();
+  const oldStart=(S.fights[0]||S.fights.current)?.t0;
+  const newStart=(fights[0]||fights.current)?.t0;
+  const sameLog=automatic&&S.connectedName===name&&oldStart===newStart&&fights.length>=S.fights.length;
+  const showingTotal=S.sel===S.fights.length;
+  const showingCurrent=S.sel===S.fights.length+1;
+  if(!sameLog){
+    S.zoneOv={};S.off=new Set();S.unit=null;S.playerOverrides=new Map();
+  }
+  S.fights=fights;S.zones=fights.zones||[];
+  S.connectedName=connected?name:null;
   // teams and pets are worked out from every fight, so hiding a fight never changes who is a player
   S.full=merge(fights.current?[...fights,fights.current]:fights);
   S.owner=ownerMap(S.full);S.players=guessPlayers(S.full);
-  S.sel=fights.current?fights.length+1:fights.length-1;
+  for(const [player,isAlly] of S.playerOverrides) {
+    if(isAlly)S.players.add(player);
+    else S.players.delete(player);
+  }
+  if(!sameLog||showingCurrent)S.sel=fights.current?fights.length+1:fights.length-1;
+  else if(showingTotal)S.sel=fights.length;
   S.currentLabel=connected?"Combate actual":"Último combate sin cierre";
-  S.unit=null;
   $("meta").textContent=`${name} · ${fights.length} ${fights.length===1?"combate anterior":"combates anteriores"}`;
   $("order").textContent=info||"";$("order").hidden=!info;
   $("empty").hidden=true;$("main").hidden=false;draw();
@@ -374,7 +387,13 @@ document.addEventListener("click",e=>{
     if(v!==null){if(v.trim())S.zoneOv[i]=v.trim();else delete S.zoneOv[i];draw()}return}
   const bk=e.target.closest("[data-back]");if(bk){S.unit=null;draw();return}
   const r=e.target.closest("[data-u]");if(r){S.unit=r.dataset.u;draw();scrollTo(0,0);return}
-  if(e.target.closest("[data-flip]")&&S.unit){S.players.has(S.unit)?S.players.delete(S.unit):S.players.add(S.unit);draw()}
+  if(e.target.closest("[data-flip]")&&S.unit){
+    const isAlly=!S.players.has(S.unit);
+    S.playerOverrides.set(S.unit,isAlly);
+    if(isAlly)S.players.add(S.unit);
+    else S.players.delete(S.unit);
+    draw();
+  }
 });
 const LOGDIR="%AppData%\\zaap\\gamesLogs\\wakfu\\logs\\";
 $("copy").onclick=async e=>{const b=e.currentTarget,old=b.dataset.label||(b.dataset.label=b.textContent);
@@ -428,10 +447,10 @@ function orderFiles(items){
   rec([],items);return best;
 }
 let importVersion = 0;
-async function pick(files,connected=false){
+async function pick(files,connected=false,automatic=false){
   files=[...files];if(!files.length)return;
   const version = ++importVersion;
-  $("meta").textContent = "Leyendo registros…";
+  if(!automatic)$("meta").textContent = "Leyendo registros…";
   let items;
   try { items = (await Promise.all(files.map(readItem))).filter(x => x.first !== null); }
   catch (_) {
@@ -444,7 +463,7 @@ async function pick(files,connected=false){
   if(ord.length>1){info="Orden de los archivos: "+ord.map(x=>x.name).join(" → ");
     for(let i=1;i<ord.length;i++){const g=gap(ord[i-1],ord[i]);
       if(g>600)info+=` · ⚠ hay ${Math.round(g/60)} min entre ${ord[i-1].name} y ${ord[i].name}: puede faltar un archivo`}}
-  load(ord.map(x=>x.text.endsWith("\n")?x.text:x.text+"\n").join(""),ord.length>1?`${ord.length} archivos`:ord[0].name,info,connected);
+  load(ord.map(x=>x.text.endsWith("\n")?x.text:x.text+"\n").join(""),ord.length>1?`${ord.length} archivos`:ord[0].name,info,connected,automatic);
 }
 $("f").onchange=e=>{const fl=[...e.target.files];e.target.value="";acceptConnectedFile=false;pick(fl)};
 addEventListener("dragover",e=>{e.preventDefault();document.body.classList.add("drag")});
@@ -461,9 +480,16 @@ if (parent !== window && document.referrer) {
   };
   addEventListener("message", event => {
     if (event.source !== parent || event.origin !== hostOrigin) return;
-    const { type, connected, file } = event.data || {};
+    const { type, connected, file, automatic } = event.data || {};
     if (type === "wakfu-report-status") $("connected").hidden = !connected;
-    if (type === "wakfu-report-file" && acceptConnectedFile && file instanceof File) pick([file],true);
+    if (type === "wakfu-report-visible") {
+      $("connected").hidden = !connected;
+      if (connected && acceptConnectedFile) parent.postMessage({ type: "wakfu-report-read", automatic: true }, hostOrigin);
+    }
+    if (type === "wakfu-report-file" && file instanceof File) {
+      $("connected").hidden = false;
+      if (acceptConnectedFile) pick([file],true,automatic === true);
+    }
     if (type === "wakfu-report-error" && acceptConnectedFile) $("meta").textContent = "No se ha podido abrir el registro conectado. Puedes elegir el archivo.";
   });
   parent.postMessage({ type: "wakfu-report-ready" }, hostOrigin);
