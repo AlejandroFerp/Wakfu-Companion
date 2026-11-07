@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Informe de combates de Wakfu</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#1e1e1e;--panel:#222;--on:#333;--hover:#2c2c2c;
+  --row:#2a2a2a;--line:#333;--sep:#555;
+  --tx:#e0e0e0;--mut:#aaa;--acc:#00d2ff;
+  --dmg:var(--acc);--heal:#f1994f;--armor:#2ecc71;--enemy:#ff8060
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 "Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+header{display:flex;gap:12px;align-items:center;padding:12px 20px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+h1{font-size:16px;margin:0;font-weight:700;color:var(--acc)}
+.file-button{position:relative}
+.file-button input{position:absolute;inset:0;width:100%;opacity:0;cursor:pointer}
+.file-button:focus-within{outline:2px solid white;outline-offset:2px}
+button.btn{font:inherit;font-weight:600}
+#empty small{display:inline-block;margin-top:10px}
+.btn{background:transparent;color:var(--acc);border:1px solid var(--acc);padding:5px 12px;border-radius:4px;font-weight:600;cursor:pointer}
+.btn:hover{background:var(--acc);color:var(--bg)}
+#meta{color:var(--mut)}
+#order{padding:6px 20px 0;font-size:12px}
+#tabs button.off{opacity:.5}#tabs button.off b{text-decoration:line-through}
+details.inc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:16px}
+details.inc summary{cursor:pointer}
+.incbar{display:flex;gap:6px;margin-top:8px}
+.incbar button,.fh label{font:inherit;font-size:12px}
+.incbar button{background:none;border:1px solid var(--line);color:var(--mut);border-radius:5px;padding:2px 9px;cursor:pointer}.incbar button:hover{color:var(--tx);border-color:var(--mut)}
+.incbox{max-height:260px;overflow:auto;margin-top:8px}
+.incbox table{width:auto}.incbox td{text-align:left;padding:3px 18px 3px 8px}
+.lnk{cursor:pointer;text-decoration:underline dotted}.offrow td{opacity:.45}
+.incbox tr[data-row]{user-select:none;cursor:pointer}.incbox tr[data-row]:hover td{background:var(--hover)}
+.fh label{cursor:pointer;color:var(--tx)}
+#empty{margin:60px auto;max-width:460px;text-align:center;color:var(--mut);border:2px dashed var(--line);border-radius:12px;padding:40px}
+body.drag #empty{border-color:var(--acc);color:var(--tx)}
+#tabs{display:flex;gap:6px;padding:12px 20px 0;flex-wrap:wrap}
+#tabs button{background:var(--panel);color:var(--mut);border:1px solid var(--line);border-bottom:0;border-radius:8px 8px 0 0;padding:7px 12px;cursor:pointer;text-align:left;font:inherit;line-height:1.25}
+#tabs button small{display:block;font-size:11px}
+#tabs button.on{color:var(--tx);background:var(--on);border-color:var(--acc)}
+#tabs button small.zone{color:var(--acc);max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#tabs button b{display:block;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+#main{padding:18px 20px;border-top:1px solid var(--line)}
+section{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:16px;overflow-x:auto}
+h2{font-size:14px;margin:0 0 8px;font-weight:600}
+h2.p{color:var(--acc)}h2.e{color:var(--enemy)}
+table{width:100%;border-collapse:collapse}
+th{color:var(--mut);font-weight:500;text-align:right;padding:4px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:5px 8px;text-align:right;border-bottom:1px solid var(--row);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+.table-scroll{overflow-x:auto}
+.table-scroll th,.table-scroll td{padding-inline:5px}
+.metric-notes{margin-top:12px;font-size:12px}
+.metric-notes summary{cursor:pointer;color:var(--mut)}
+@media(max-width:700px){#main,header,#tabs{padding-inline:10px}.cats{flex-wrap:wrap}}
+tr.u{cursor:pointer}tr.u:hover td{background:var(--hover)}
+.bar{position:relative}.bar i{position:absolute;left:0;top:0;bottom:0;opacity:.28;border-radius:3px}
+.bar span{position:relative}
+.mut{color:var(--mut)}
+th.srt{cursor:pointer;user-select:none}th.srt:hover{color:var(--tx)}
+th.cd{color:var(--dmg)}th.ch{color:var(--heal)}th.ca{color:var(--armor)}
+/* skill table: each category (damage / healing / armor) has its own colour, a thick coloured left border and a tint */
+.k-dmg{--cat:var(--dmg)}.k-heal{--cat:var(--heal)}.k-armor{--cat:var(--armor)}
+td[class*="k-"],th[class*="k-"]{background:color-mix(in srgb,var(--cat) 7%,transparent)}
+th.cat{background:color-mix(in srgb,var(--cat) 26%,var(--panel));color:var(--cat);font-weight:700;font-size:15px;border-bottom:2px solid var(--cat)}
+.grp{border-left:3px solid var(--cat,var(--line))}
+.sep{border-left:1px dashed var(--sep)}
+.cats{display:flex;gap:6px;margin:0 0 12px}
+#detail .cats button{padding:4px 14px;font-size:13px;border-radius:6px}
+#detail .cats button:hover{color:var(--tx)}
+#detail .cats button.on{background:color-mix(in srgb,var(--cat,var(--acc)) 24%,var(--panel));color:var(--cat,var(--acc));border-color:var(--cat,var(--acc));font-weight:600}
+#detail th[colspan]{text-align:center}tr.sub th{font-size:11px;padding:0 8px 2px;border-bottom:0}
+.notes{list-style:none;margin:10px 0 0;padding:0;font-size:12px;color:var(--mut)}.notes li{padding:2px 0}.notes b{color:var(--tx);font-weight:600}
+.fh{margin:0 0 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.fh button{background:none;border:1px solid var(--line);color:var(--mut);border-radius:5px;padding:2px 9px;cursor:pointer;font:inherit;font-size:12px}.fh button:hover{color:var(--tx);border-color:var(--mut)}
+.nav{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.nav button{background:var(--panel);color:var(--mut);border:1px solid var(--line);border-radius:14px;padding:3px 11px;cursor:pointer;font:inherit;font-size:12px}
+.nav button:hover{color:var(--tx)}.nav button.on{background:var(--on);color:var(--tx);border-color:var(--acc)}
+.nav .back{border-radius:6px;color:var(--tx);margin-right:8px}
+#detail h2{font-size:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+#detail button{background:none;border:1px solid var(--line);color:var(--mut);border-radius:5px;padding:2px 8px;cursor:pointer;font:inherit;font-size:12px}
+#detail button:hover{color:var(--tx);border-color:var(--mut)}
+</style></head><body>
+<header><h1>Informe de combates de Wakfu</h1><span class="mut">Vista de Leo</span>
+<button class="btn" id="connected" type="button" hidden>Actualizar registro conectado</button>
+<label class="btn file-button">Abrir logs<input id="f" type="file" multiple></label><label style="cursor:pointer"><input id="pets" type="checkbox" checked> Sumar las mascotas a su dueño</label><span id="meta"></span></header>
+<div id="empty">Arrastra tu <b>wakfu_chat.log</b> (o varios a la vez: .1, .2…) a cualquier parte de esta página. Los logs se encuentran en "%AppData%\zaap\gamesLogs\wakfu\logs\"<br><br>
+  <button id="copy" class="btn" type="button">Copiar ruta al portapapeles</button><br>
+  <small>Pégala en la barra de direcciones del Explorador de archivos de Windows para llegar al log.</small></div>
+<div id="order" class="mut" hidden></div>
+<nav id="tabs"></nav><div id="main" hidden></div>
+<script>
+/* ---------- parsing ---------- */
+const TS=/^(\d\d):(\d\d):(\d\d),(\d+) - \[([^\]]+)\] (.*)$/;
+const CAST=/^(.*?) (?:casts|lance(?: le sort)?|lanza(?: el hechizo)?|lança(?: o feitiço)?) (.*?)(?:\.(?=$|\s\()|(?=\s\()|$)/i;
+const ACT=/^(.*?): ([+-])?([\d.,]+) (PdV|PV|HP|Armadura|Armure|Armor)(.*)$/;
+const XP=/^(.*?): \+[\d.,]+ (?:puntos de XP|XP points|points d'XP|pontos de XP)/i;
+const MARK=/devuelt|carried over|tour suivant|devolvid/i; // "N seconds carried over to the next turn" = a player turn just ended
+const SUMM=/^(.*?): (?:Invoca un\(a\)|Summons|Invoque) (.+?)\s*$/i;
+const KO=/^(?:(.*?): está fuera de combate|¡(.*?) está K\.O\.!)/;
+const CHEST=/Cofre de la mazmorra\s+(.+?)\s*\.?\s*$/i; // the end-of-dungeon chest is the only place the log names a dungeon
+const GAP=600; // seconds without combat lines that split two fights
+const END=/Combate terminado|Fight (?:is )?over|Combat termin|Combate encerrado/i;
+const newFight=()=>({units:Object.create(null),t0:null,t1:null,clock:"",has:false,dur:0,xp:new Set(),edges:{},summ:{},tev:[]});
+const addEdge=(F,a,b,w)=>{const k=a<b?a+"\u0001"+b:b+"\u0001"+a;F.edges[k]=(F.edges[k]||0)+w};
+const unit=(F,n)=>F.units[n]||(F.units[n]={dmg:0,heal:0,armor:0,casts:0,turns:0,taken:0,spells:Object.create(null)});
+const spl=(u,s)=>u.spells[s]||(u.spells[s]={casts:0,dmg:0,dmgN:0,heal:0,healN:0,armor:0,armorN:0,dmgC:0,healC:0,armorC:0,dmgK:0,healK:0,armorK:0,effC:0,dmgMin:0,dmgMax:0,healMin:0,healMax:0,armorMin:0,armorMax:0,dmgMinH:0,dmgMaxH:0,healMinH:0,healMaxH:0,armorMinH:0,armorMaxH:0});
+
+function parse(text){
+  const fights=[];let F=null,cur=null,spell=null,day=0,prev=-1,fl={},fa=false,fk=false,lc=null,lastT=null,cs={},zones=[];
+  // cs: per-cast totals (every strike and target of one cast summed). A "hit" is one single event line in the log.
+  const flush=()=>{
+    for(const k in cs){const e=cs[k],s=e.s,t=e.t;if(!s[t+"Min"]||e.v<s[t+"Min"])s[t+"Min"]=e.v;if(e.v>s[t+"Max"])s[t+"Max"]=e.v}
+    cs={}};
+  const touch=(t,m)=>{if(F.t0===null){F.t0=t;F.clock=`${m[1]}:${m[2]}:${m[3]}`}F.t1=t};
+  for(const raw of text.split("\n")){
+    const m=TS.exec(raw.replace(/\r$/,""));if(!m)continue;
+    if(!/\(combate?\)|\(fight\)|^Fight Log$|^Registro de lutas$/i.test(m[5])){
+      const ch=/\((juego|game|jeu)\)/i.test(m[5])&&CHEST.exec(m[6]);
+      if(ch){const after=fights.length+(F&&F.has?1:0),z=zones[zones.length-1],name="Mazmorra "+ch[1];
+        if(!z||z.after!==after||z.name!==name)zones.push({after,name})}
+      continue}
+    let t=+m[1]*3600+ +m[2]*60+ +m[3]+ +m[4]/1000;
+    if(t<prev-3600)day+=86400;prev=t;t+=day;
+    // Some fights (training room, leaving early) never print "Combate terminado": a long silence ends the fight.
+    if(F&&F.has&&lastT!==null&&t-lastT>GAP){flush();F.dur=Math.max(1,F.t1-F.t0);fights.push(F);F=null;cur=null;fl={};fa=false;fk=false;lc=null}
+    lastT=t;
+    const c=m[6].trim();
+    if(END.test(c)){flush();if(F&&F.has){F.dur=Math.max(1,F.t1-F.t0);fights.push(F)}F=null;cur=null;fl={};fa=false;fk=false;lc=null;continue}
+    if(MARK.test(c)){lc=null;(F=F||newFight()).tev.push(["m"]);continue}
+    F=F||newFight();
+    const ko=KO.exec(c);if(ko){F.tev.push(["k",(ko[1]||ko[2]).trim()]);continue}
+    const xp=XP.exec(c);if(xp){F.xp.add(xp[1].trim());continue}
+    const sm=SUMM.exec(c);if(sm){const k=sm[1].trim()+"\u0001"+sm[2].trim();F.summ[k]=(F.summ[k]||0)+1;continue}
+    const k=CAST.exec(c);
+    if(k&&!ACT.test(c)){flush();cur=k[1].trim();spell=k[2].trim().replace(/\.$/,"");fl={};fa=false;fk=/\(Cr[ií]tic|\(Critical|\(Critique/i.test(c); // the game marks a critical on the cast line
+     
+      touch(t,m);F.tev.push(["c",cur]);const u=unit(F,cur);u.casts++;if(cur!==lc){u.turns++;lc=cur} // a turn = a run of casts by the same unit
+      spl(u,spell).casts++;continue}
+    const a=ACT.exec(c);if(!a)continue;
+    const n=parseInt(a[3].replace(/[.,]/g,""),10);if(!n)continue;
+    let type;
+    if(/^Arm/i.test(a[4])){if(a[2]==="-")continue;type="armor"}
+    else type=a[2]==="-"?"dmg":a[2]==="+"?"heal":null;
+    if(!type)continue;
+    const who=cur||a[1].trim();let sp=cur?spell:"Indirecto / desconocido";
+    if(type==="armor"){const p=/\(([^)]+)\)/.exec(a[5]);if(p)sp=p[1]}
+    const tg=a[1].trim();
+    if(type==="dmg"){unit(F,tg).taken+=n; // damage received, also by units that never act (e.g. a training dummy)
+      if(tg===who)continue} // self-inflicted damage (a debuff when casting, ...) is not damage dealt
+    touch(t,m);F.has=true;
+    if(cur&&tg!==cur)addEdge(F,cur,tg,type==="dmg"?-1:1);
+    const u=unit(F,who),s=spl(u,sp);u[type]+=n;s[type]+=n;
+    s[type+"N"]++;if(!s[type+"MinH"]||n<s[type+"MinH"])s[type+"MinH"]=n;if(n>s[type+"MaxH"])s[type+"MaxH"]=n;
+    if(cur){const ck=type+"|"+sp;const q=cs[ck]||(cs[ck]={s,t:type,v:0});q.v+=n;
+      if(!fl[ck]){fl[ck]=1;s[type+"C"]++;if(fk)s[type+"K"]++}
+      if(!fa){fa=true;spl(u,spell).effC++}} // a cast "lands" per effect type; effC = cast had any effect
+  }
+  flush();
+  if(F&&F.has){F.dur=Math.max(1,F.t1-F.t0);fights.push(F)}
+  fights.zones=fights.map((_,i)=>{const z=zones.find(z=>z.after>i);return z?z.name:""}); // dungeon = the next chest after this fight
+  return fights;
+}
+function addSpell(q,s){for(const k in s){
+  if(/Min/.test(k)){if(s[k]&&(!q[k]||s[k]<q[k]))q[k]=s[k]}
+  else if(/Max/.test(k))q[k]=Math.max(q[k],s[k]);else q[k]+=s[k]}}
+function merge(fights){
+  const M=newFight();M.clock="all";
+  for(const F of fights){F.xp.forEach(x=>M.xp.add(x));M.dur+=F.dur;
+    for(const k in F.edges)M.edges[k]=(M.edges[k]||0)+F.edges[k];
+    for(const k in F.summ)M.summ[k]=(M.summ[k]||0)+F.summ[k];
+    for(const[n,u]of Object.entries(F.units)){const o=unit(M,n);
+      for(const k of["dmg","heal","armor","casts","turns","taken"])o[k]+=u[k];
+      for(const[sn,s]of Object.entries(u.spells))addSpell(spl(o,sn),s)}}
+  return M;
+}
+/* Pets: "Owner: Invoca un(a) Pet" links a summon to its owner; "[Owner] Thing" names and
+   "Súper X" variants of a summoned name are linked too. */
+function ownerMap(M){
+  const best=Object.create(null),norm=n=>n.toLowerCase().replace(/^s[úu]per /,""),byNorm=Object.create(null),owner=Object.create(null);
+  for(const k in M.summ){const[o,s]=k.split("\u0001");if(!best[s]||M.summ[k]>best[s].n)best[s]={o,n:M.summ[k]}}
+  for(const s in best)byNorm[norm(s)]=best[s].o;
+  const names=new Set(Object.keys(M.units));for(const s in best)names.add(s);
+  for(const n of names){const pm=/^\[(.+?)\] /.exec(n);
+    if(best[n])owner[n]=best[n].o;else if(pm)owner[n]=pm[1];else if(byNorm[norm(n)])owner[n]=byNorm[norm(n)]}
+  for(const n in owner)if(owner[n]===n)delete owner[n];
+  return owner;
+}
+const rootOf=n=>{const seen=new Set();let c=n;while(S.owner[c]&&!seen.has(c)){seen.add(c);c=S.owner[c]}return c};
+/* Turns of player characters. Each player turn that ends with time left writes "N segundos devueltos...",
+   which carries no name, so the owner is the last caster before it (a pet counts for its owner).
+   Markers without a character owner are turns of someone who did nothing (a pass), unless that
+   character is KO; two markers in a row for the same character are one turn (clone / summon turn). */
+function charTurns(F){
+  const asChar=n=>{if(!n)return null;const r=rootOf(n);return S.players.has(r)&&!S.owner[r]?r:null};
+  const M=[];let dead=new Set(),seg=null;
+  for(const e of F.tev){
+    if(e[0]==="c"){seg=e[1];dead.delete(e[1])}
+    else if(e[0]==="k")dead.add(e[1]);
+    else{M.push({c:asChar(seg),dead:new Set(dead)});seg=null}}
+  const tail=asChar(seg),O=[];
+  for(const m of M)if(m.c&&!O.includes(m.c))O.push(m.c); // turn order = order of first appearance
+  const out=Object.create(null),add=n=>out[n]=(out[n]||0)+1;
+  let last=null,pend=[];
+  for(const m of M){
+    if(!m.c){pend.push(m.dead);continue}
+    if(pend.length&&last&&O.length>1){ // fill passes between two known turns
+      const ia=O.indexOf(last),ib=O.indexOf(m.c),miss=[];
+      for(let j=(ia+1)%O.length;j!==ib&&miss.length<O.length;j=(j+1)%O.length)if(j!==ia&&!pend[0].has(O[j]))miss.push(O[j]);
+      miss.slice(0,pend.length).forEach(add)}
+    pend=[];
+    const alive=O.filter(n=>!m.dead.has(n)).length;
+    if(!(m.c===last&&alive>1))add(m.c);
+    last=m.c}
+  if(tail&&!(tail===last&&O.length>1))add(tail); // the fight ended during this player's turn
+  return out;
+}
+function applyPets(F,ct,fold){
+  const V={...F,units:Object.create(null)};
+  for(const[n,u]of Object.entries(F.units)){
+    const r0=rootOf(n),r=fold&&S.players.has(r0)?r0:n; // only player-side pets are folded into their owner; enemy summons stay separate
+    const o=unit(V,r);
+    for(const k of["dmg","heal","armor","casts","taken"])o[k]+=u[k];
+    const isChar=S.players.has(n)&&!S.owner[n];
+    if(r===n)o.turns+=isChar?(ct[n]||0):u.turns; // turns stay the owner's own
+    for(const[sn,s]of Object.entries(u.spells))addSpell(spl(o,r===n?sn:`${sn} (${n})`),s)}
+  return V;
+}
+
+/* Team detection: damage links opposite teams, heals/armor link the same team,
+   "[Owner] Summon" names belong to the owner's team. Spread outward from XP-earning characters. */
+function guessPlayers(M){
+  const adj=Object.create(null);const link=(a,b,w)=>{(adj[a]=adj[a]||[]).push([b,w]);(adj[b]=adj[b]||[]).push([a,w])};
+  for(const k in M.edges){const[a,b]=k.split("\u0001");link(a,b,M.edges[k])}
+  for(const n of Object.keys(adj)){const o=/^\[(.+?)\] /.exec(n);if(o&&o[1]!==n)link(n,o[1],50)}
+  const lab=Object.create(null);let seeds=[...M.xp];
+  if(!seeds.length){const top=Object.entries(M.units).sort((a,b)=>b[1].casts-a[1].casts)[0];if(top)seeds=[top[0]]}
+  seeds.forEach(s=>lab[s]=1);
+  for(;;){let best=null,bs=0;
+    for(const n in adj){if(n in lab)continue;
+      let s=0;for(const[m,w]of adj[n])if(m in lab)s+=w*lab[m];
+      if(Math.abs(s)>Math.abs(bs)){bs=s;best=n}}
+    if(!best)break;lab[best]=bs>0?1:-1}
+  return new Set(Object.keys(lab).filter(n=>lab[n]>0));
+}
+/* ---------- UI ---------- */
+const $=id=>document.getElementById(id);
+const S={fights:[],all:null,sel:0,unit:null,players:new Set(),zoneOv:{},off:new Set(),incOpen:true,full:null,cat:"dmg",sort:{k:"dmg",d:-1},usort:{k:"dmg",d:-1},pets:true,owner:{}};
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const N=x=>Math.round(x).toLocaleString("es-ES",{useGrouping:"always"});
+const dash=(x,f=N)=>x?f(x):'<span class="mut">–</span>';
+const mmss=s=>`${Math.floor(s/60)} min ${String(Math.round(s%60)).padStart(2,"0")} s`;
+
+/* Fight name = the enemy that dealt the most damage (its summons count for it); if nobody
+   dealt damage (e.g. a training dummy), the enemy that received the most. */
+function fightName(F){
+  const pick=k=>{const agg=Object.create(null);
+    for(const[n,u]of Object.entries(F.units)){if(S.players.has(n)||!u[k])continue;
+      const r=rootOf(n),key=S.players.has(r)||!F.units[r]?n:r;agg[key]=(agg[key]||0)+u[k]}
+    return Object.entries(agg).sort((a,b)=>b[1]-a[1])[0]};
+  const t=pick("dmg")||pick("taken");return t?t[0]:null;
+}
+function load(text,name,info){
+  const fights = parse(text);
+  if(!fights.length){$("meta").textContent="No se han encontrado combates en "+name;return}
+  S.fights=fights;S.zones=fights.zones||[];S.zoneOv={};S.off=new Set();
+  // teams and pets are worked out from every fight, so hiding a fight never changes who is a player
+  S.full=merge(S.fights);S.owner=ownerMap(S.full);S.players=guessPlayers(S.full);S.sel=0;S.unit=null;
+  $("meta").textContent=`${name} · ${S.fights.length} ${S.fights.length === 1 ? "combate" : "combates"}`;
+  $("order").textContent=info||"";$("order").hidden=!info;
+  $("empty").hidden=true;$("main").hidden=false;draw();
+}
+function incPanel(zone,incl){
+  const rows=S.fights.map((F,i)=>`<tr data-row="${i}" title="Doble clic para incluir o quitar" class="${S.off.has(i)?"offrow":""}"><td><input type="checkbox" data-inc="${i}" ${S.off.has(i)?"":"checked"}><td>${i+1}. ${esc(fightName(F)||"Combate")}<td class="mut">${esc(zone(i))}<td class="mut">${F.clock}<td class="mut">${mmss(F.dur)}<td><span class="lnk" data-i="${i}">ver →</span></tr>`).join("");
+  return `<details class="inc" ${S.incOpen?"open":""}><summary>Combates incluidos en el total: <b>${incl.length} de ${S.fights.length}</b></summary><div class="incbar"><button data-incall="1">Incluir todos</button><button data-incall="0">Quitar todos</button></div><div class="incbox"><table>${rows}</table></div></details>`;
+}
+function draw(){
+  const zone=i=>S.zoneOv[i]??S.zones[i]??"";
+  const incl=S.fights.filter((_,i)=>!S.off.has(i));S.all=merge(incl);
+  const list=[...S.fights.map((F,i)=>[F,`${i+1}. ${esc(fightName(F)||"Combate")}`,`${F.clock} · ${mmss(F.dur)}`,zone(i)]),[S.all,"Todos los combates",`${incl.length} de ${S.fights.length} incluidos · ${mmss(S.all.dur)}`]];
+  const base=S.sel<S.fights.length?S.fights[S.sel]:S.all;
+  const ct=Object.create(null);(base===S.all?incl:[base]).forEach(F=>{const c=charTurns(F);for(const k in c)ct[k]=(ct[k]||0)+c[k]});
+  const cur=applyPets(base,ct,S.pets);
+  const kids=S.pets&&S.unit?Object.keys(base.units).filter(n=>n!==S.unit&&S.players.has(S.unit)&&rootOf(n)===S.unit):[];
+  $("tabs").innerHTML=list.map(([F,a,b,z],i)=>`<button data-i="${i===S.fights.length?S.fights.length:i}" class="${(i===S.sel||(i===S.fights.length&&S.sel>=S.fights.length))?"on":""}${S.off.has(i)?" off":""}">${z?`<small class="zone">${esc(z)}</small>`:""}<b>${a}</b><small>${b}</small></button>`).join("");
+  const names=Object.keys(cur.units).filter(n=>{const u=cur.units[n];return u.dmg||u.heal||u.armor||u.taken});
+  const group=p=>names.filter(n=>S.players.has(n)===p).sort((a,b)=>{const{k,d}=S.usort,A=cur.units[a],B=cur.units[b];
+    const v=(x,n)=>k==="name"?n:k==="dpt"?(x.turns?x.dmg/x.turns:0):x[k];
+    const x=v(A,a),y=v(B,b);return (k==="name"?x.localeCompare(y,"es"):x-y)*d||B.dmg-A.dmg});
+  const maxD=Math.max(1,...names.map(n=>cur.units[n].dmg));
+  const tbl=(title,cls,col,arr)=>`<section><h2 class="${cls}">${title}</h2><table><tr>${[["name","Unidad"],["dmg","Daño"],["taken","Recibido"],["turns","Turnos"],["dpt","Daño / turno"],["heal","Curación"],["armor","Armadura"]].map(([c,l])=>`<th data-usort="${c}" class="srt ${({dmg:"cd",heal:"ch",armor:"ca"})[c]||""}">${l}${S.usort.k===c?(S.usort.d<0?" ▼":" ▲"):""}`).join("")}</tr>`+
+    (arr.map(n=>{const u=cur.units[n];return `<tr class="u ${n===S.unit?"sel":""}" data-u="${esc(n)}"><td>${esc(n)}<td class="bar"><i style="width:${u.dmg/maxD*100}%;background:${col}"></i><span>${dash(u.dmg)}</span><td>${dash(u.taken)}<td>${dash(u.turns)}<td>${dash(u.turns?u.dmg/u.turns:0)}<td>${dash(u.heal)}<td>${dash(u.armor)}</tr>`}).join("")||'<tr><td class="mut" colspan="7">ninguno')+`</table></section>`;
+  let html;
+  if(S.unit){ // detail view: one unit, full width, with chips to jump to another unit
+    const u=cur.units[S.unit];
+    const chips=[...group(true),...group(false)].map(n=>`<button data-u="${esc(n)}" class="${n===S.unit?"on":""}">${esc(n)}</button>`).join("");
+    html=`<div class="nav"><button class="back" data-back="1">← Volver a la lista</button>${chips}</div><div id="detail">`+
+      (u?detail(S.unit,u,kids):`<section class="mut">${esc(S.unit)} no participó en este combate.</section>`)+`</div>`;
+  }else html=tbl("Jugadores","p","var(--acc)",group(true))+tbl("Enemigos","e","var(--dmg)",group(false))+'<p class="mut" style="font-size:12px">Haz clic en una unidad para ver sus hechizos.</p>';
+  const fh=S.sel<S.fights.length?`<div class="fh"><span class="mut">Zona de este combate:</span> <b>${esc(zone(S.sel)||"sin zona")}</b> <button data-zone="1">✎ cambiar zona</button> <label><input type="checkbox" data-inc="${S.sel}" ${S.off.has(S.sel)?"":"checked"}> Incluir en el total</label></div>`:"";
+  const ob=document.querySelector(".incbox"),oy=ob?ob.scrollTop:0,wy=window.scrollY; // keep scroll positions when the view is redrawn
+  $("main").innerHTML=fh+(S.sel>=S.fights.length&&!S.unit?incPanel(zone,incl):"")+html;
+  const nb=document.querySelector(".incbox");if(nb)nb.scrollTop=oy;
+  if(window.scrollY!==wy)scrollTo(0,wy);
+}
+const TYPES=[["dmg","Daño"],["heal","Curación"],["armor","Armadura"]];
+const val=(k,n,s)=>{
+  if(k==="name")return n;if(k==="casts")return s.casts;if(k==="none")return Math.max(0,s.casts-s.effC);
+  if(k==="tot")return s.dmg+s.heal+s.armor;
+  const t=k.replace(/(KP|K|C|N|AH|AC|MinH|MaxH|Min|Max)$/,""),x=k.slice(t.length);
+  if(x==="")return s[t];
+  if(["C","N","K","Min","Max","MinH","MaxH"].includes(x))return s[t+x];
+  if(x==="KP")return s[t+"C"]?s[t+"K"]/s[t+"C"]*100:0;
+  const d=x==="AH"?s[t+"N"]:s[t+"C"];return d?s[t]/d:0};
+const CATS=[["dmg","Daño"],["heal","Curación"],["armor","Armadura"],["all","Todo"]];
+function detail(name,u,kids){
+  const cat=S.cat,T=cat==="all"?TYPES:TYPES.filter(([t])=>t===cat);
+  const sp=Object.entries(u.spells).filter(([,s])=>cat==="all"?(s.dmg||s.heal||s.armor||s.casts):s[cat]>0);
+  const cols=[["name","Hechizo"],["casts","Lanzamientos"],["none","Sin efecto"]];
+  const sub={"":"Total",C:"Efect.",Min:"Mín",Max:"Máx",AC:"Media",K:"Crít.",KP:"% crít.",N:"Golpes",MinH:"Mín",MaxH:"Máx",AH:"Media"};
+  const ORDER=["","C","Min","Max","AC","K","KP","N","MinH","MaxH","AH"];
+  const CLS={"":"grp",C:"sep",N:"sep"}; // a separator before Total, the per-cast block and the per-hit block
+  const fmt={KP:x=>Math.round(x)+" %"};
+  T.forEach(([t])=>ORDER.forEach(x=>cols.push([t+x,sub[x],(CLS[x]||"")+" k-"+t])));
+  const {k,d}=S.sort;
+  sp.sort((a,b)=>{const x=val(k,a[0],a[1]),y=val(k,b[0],b[1]);
+    return (typeof x==="string"?x.localeCompare(y,"es"):x-y)*d||val("tot","",b[1])-val("tot","",a[1])});
+  const arrow=c=>c===k?(d<0?" ▼":" ▲"):"";
+  const h1=`<tr><th colspan="3">`+T.map(([t,l])=>`<th colspan="${ORDER.length}" class="grp cat k-${t}">${l}`).join("")+`</tr>`;
+  const h1b=`<tr class="sub"><th colspan="3">`+T.map(([t])=>`<th class="grp k-${t}"><th colspan="6" class="sep k-${t}">Por lanzamiento<th colspan="4" class="sep k-${t}">Por golpe`).join("")+`</tr>`;
+  const h2=`<tr>`+cols.map(([c,l,cl])=>`<th data-sort="${c}" class="srt ${cl}">${l}${arrow(c)}`).join("")+`</tr>`;
+  const cell=(t,x,v)=>`<td class="${x} k-${t}">${v}`;
+  const rows=sp.map(([n,s])=>`<tr><td>${esc(n)}<td>${dash(s.casts)}<td>${dash(val("none",n,s))}`+
+    T.map(([t])=>ORDER.map(x=>cell(t,CLS[x]||"",dash(val(t+x,n,s),fmt[x]))).join("")).join("")+`</tr>`).join("")
+    ||`<tr><td class="mut" colspan="${3+T.length*ORDER.length}">Sin datos de ${CATS.find(c=>c[0]===cat)[1].toLowerCase()} para esta unidad</tr>`;
+  const tabs=`<div class="cats">`+CATS.map(([c,l])=>`<button data-cat="${c}" class="k-${c} ${c===cat?"on":""}">${l}</button>`).join("")+`</div>`;
+  const isP=S.players.has(name);
+  return `<section><h2>${esc(name)} <span class="mut">${isP?"jugador":"enemigo"}${kids&&kids.length?" · incluye "+kids.map(esc).join(", "):""}</span><button data-flip="1">marcar como ${isP?"enemigo":"jugador"}</button></h2>${tabs}<div class="table-scroll" tabindex="0" role="region" aria-label="Estadísticas por hechizo"><table>${h1}${h1b}${h2}${rows}</table></div><details class="metric-notes"><summary>Qué significa cada métrica</summary><ul class="notes">
+<li><b>Lanzamientos</b> – cada vez que se lanzó el hechizo, incluidos los que no hicieron nada.</li>
+<li><b>Sin efecto</b> – lanzamientos que no hicieron daño, curación ni armadura (celdas vacías, buffs, movimiento).</li>
+<li><b>Total</b> – todo lo que hizo el hechizo en el combate seleccionado.</li>
+<li><b>Efect.</b> – lanzamientos efectivos: los que hicieron algo de ese tipo. Un mismo lanzamiento puede contar en varios tipos, p. ej. dañar a un enemigo y curar a un aliado.</li>
+<li><b>Por lanzamiento Mín / Máx / Media</b> – total más pequeño, más grande y medio de un lanzamiento efectivo. Se suman todos los golpes y objetivos de ese lanzamiento.</li>
+<li><b>Crít. / % crít.</b> – lanzamientos efectivos que fueron críticos y su porcentaje sobre los efectivos. El juego marca el crítico en el lanzamiento, así que un hechizo de zona cuenta una vez.</li>
+<li><b>Golpes</b> – golpes individuales del registro. Un golpe doble cuenta como 2 golpes; un hechizo de zona que alcanza a 3 objetivos, como 3.</li>
+<li><b>Por golpe Mín / Máx / Media</b> – golpe individual más pequeño, más grande y medio.</li>
+<li><b>Pestañas</b> – Daño, Curación y Armadura muestran solo los hechizos que hicieron ese tipo de efecto; Todo muestra todos, también los que no hicieron nada.</li>
+<li><b>Orden</b> – haz clic en la cabecera de una columna para ordenar; vuelve a hacer clic para invertir el orden.</li>
+</ul></details></section>`;
+}
+$("pets").onchange=e=>{S.pets=e.target.checked;if(S.all)draw()};
+document.addEventListener("click",e=>{
+  const ut=e.target.closest("[data-usort]");if(ut){const c=ut.dataset.usort;S.usort=S.usort.k===c?{k:c,d:-S.usort.d}:{k:c,d:c==="name"?1:-1};draw();return}
+  const ct=e.target.closest("[data-cat]");if(ct){S.cat=ct.dataset.cat;S.sort={k:S.cat==="all"?"tot":S.cat,d:-1};draw();return}
+  const ia=e.target.closest("[data-incall]");if(ia){S.off=ia.dataset.incall==="1"?new Set():new Set(S.fights.map((_,i)=>i));draw();return}
+  const th=e.target.closest("[data-sort]");if(th){const c=th.dataset.sort;S.sort=S.sort.k===c?{k:c,d:-S.sort.d}:{k:c,d:c==="name"?1:-1};draw();return}
+  const t=e.target.closest("[data-i]");if(t){S.sel=+t.dataset.i;draw();return}
+  if(e.target.closest("[data-zone]")&&S.sel<S.fights.length){const i=S.sel,v=prompt("Zona de este combate (vacío = automática):",S.zoneOv[i]??S.zones[i]??"");
+    if(v!==null){if(v.trim())S.zoneOv[i]=v.trim();else delete S.zoneOv[i];draw()}return}
+  const bk=e.target.closest("[data-back]");if(bk){S.unit=null;draw();return}
+  const r=e.target.closest("[data-u]");if(r){S.unit=r.dataset.u;draw();scrollTo(0,0);return}
+  if(e.target.closest("[data-flip]")&&S.unit){S.players.has(S.unit)?S.players.delete(S.unit):S.players.add(S.unit);draw()}
+});
+const LOGDIR="%AppData%\\zaap\\gamesLogs\\wakfu\\logs\\";
+$("copy").onclick=async e=>{const b=e.currentTarget,old=b.dataset.label||(b.dataset.label=b.textContent);
+  try{await navigator.clipboard.writeText(LOGDIR)}
+  catch(x){const t=document.createElement("textarea");t.value=LOGDIR;document.body.appendChild(t);t.select();document.execCommand("copy");t.remove()}
+  b.textContent="¡Ruta copiada!";setTimeout(()=>b.textContent=old,1800)};
+addEventListener("keydown",e=>{if(e.key==="Escape"&&S.unit){S.unit=null;draw()}});
+document.addEventListener("change",e=>{const c=e.target.closest&&e.target.closest("[data-inc]");
+  if(c){const i=+c.dataset.inc;c.checked?S.off.delete(i):S.off.add(i);draw()}});
+document.addEventListener("dblclick",e=>{const r=e.target.closest&&e.target.closest("[data-row]");
+  if(!r||e.target.closest("input,[data-i]"))return;const i=+r.dataset.row;S.off.has(i)?S.off.delete(i):S.off.add(i);draw()});
+document.addEventListener("toggle",e=>{if(e.target.matches&&e.target.matches("details.inc"))S.incOpen=e.target.open},true);
+/* Several log files: Wakfu rotates the log, so the files are put back in order by their timestamps
+   (each file starts a moment after the previous one ends) and read as one single log. */
+const TSL=/^(\d\d):(\d\d):(\d\d),(\d+) - /;
+const secOf=l=>{const m=TSL.exec(l);return m?+m[1]*3600+ +m[2]*60+ +m[3]+ +m[4]/1000:null};
+async function readItem(f){
+  // Rotated logs can contain both UTF-8 and Windows-1252 lines.
+  const bytes = new Uint8Array(await f.arrayBuffer());
+  const utf8 = new TextDecoder("utf-8", { fatal: true });
+  const legacy = new TextDecoder("windows-1252");
+  const lines = [];
+  let start = 0;
+  for (let end = 0; end <= bytes.length; end++) {
+    if (end !== bytes.length && bytes[end] !== 10) continue;
+    const line = bytes.subarray(start, end);
+    try { lines.push(utf8.decode(line)); }
+    catch (_) { lines.push(legacy.decode(line)); }
+    start = end + 1;
+  }
+  const text = lines.join("\n");
+  let first=null,last=null;
+  for(let i=0;i<lines.length&&first===null;i++)first=secOf(lines[i]);
+  for(let i=lines.length-1;i>=0&&last===null;i--)last=secOf(lines[i]);
+  return {name:f.name,text,first,last,mod:f.lastModified||0};
+}
+const gap=(a,b)=>(((b.first-a.last)%86400)+86400)%86400; // seconds from the end of a to the start of b
+function orderFiles(items){
+  if(items.length<2)return items;
+  const rotation = name => /^wakfu_chat\.log(?:\.(\d+))?$/i.exec(name);
+  if (items.every(item => rotation(item.name))) {
+    return [...items].sort((a, b) => Number(rotation(b.name)[1] || 0) - Number(rotation(a.name)[1] || 0));
+  }
+  const inv=p=>{let c=0;for(let i=0;i<p.length;i++)for(let j=i+1;j<p.length;j++)if(p[i].mod>p[j].mod)c++;return c};
+  if(items.length>7)return [...items].sort((a,b)=>a.mod-b.mod);
+  let best=items,bc=Infinity,bi=Infinity;
+  const rec=(p,rest)=>{
+    if(!rest.length){const c=p.slice(1).reduce((s,x,i)=>s+gap(p[i],x),0),v=inv(p);
+      if(c<bc-1e-6||(Math.abs(c-bc)<=1e-6&&v<bi)){best=p;bc=c;bi=v}return}
+    rest.forEach((x,i)=>rec([...p,x],[...rest.slice(0,i),...rest.slice(i+1)]))};
+  rec([],items);return best;
+}
+let importVersion = 0;
+async function pick(files){
+  files=[...files];if(!files.length)return;
+  const version = ++importVersion;
+  $("meta").textContent = "Leyendo registros…";
+  let items;
+  try { items = (await Promise.all(files.map(readItem))).filter(x => x.first !== null); }
+  catch (_) {
+    if (version === importVersion) $("meta").textContent = "No se han podido leer los archivos.";
+    return;
+  }
+  if (version !== importVersion) return;
+  if(!items.length){$("meta").textContent="No se reconoce ningún log de Wakfu en los archivos elegidos";return}
+  const ord=orderFiles(items);let info="";
+  if(ord.length>1){info="Orden de los archivos: "+ord.map(x=>x.name).join(" → ");
+    for(let i=1;i<ord.length;i++){const g=gap(ord[i-1],ord[i]);
+      if(g>600)info+=` · ⚠ hay ${Math.round(g/60)} min entre ${ord[i-1].name} y ${ord[i].name}: puede faltar un archivo`}}
+  load(ord.map(x=>x.text.endsWith("\n")?x.text:x.text+"\n").join(""),ord.length>1?`${ord.length} archivos`:ord[0].name,info);
+}
+$("f").onchange=e=>{const fl=[...e.target.files];e.target.value="";acceptConnectedFile=false;pick(fl)};
+addEventListener("dragover",e=>{e.preventDefault();document.body.classList.add("drag")});
+addEventListener("dragleave",()=>document.body.classList.remove("drag"));
+addEventListener("drop",e=>{e.preventDefault();document.body.classList.remove("drag");acceptConnectedFile=false;pick(e.dataTransfer.files)});
+
+// Keep the imported report independent of the live meter and its history.
+let acceptConnectedFile = true;
+if (parent !== window && document.referrer) {
+  const hostOrigin = new URL(document.referrer).origin;
+  $("connected").onclick = () => {
+    acceptConnectedFile = true;
+    parent.postMessage({ type: "wakfu-report-read" }, hostOrigin);
+  };
+  addEventListener("message", event => {
+    if (event.source !== parent || event.origin !== hostOrigin) return;
+    const { type, connected, file } = event.data || {};
+    if (type === "wakfu-report-status") $("connected").hidden = !connected;
+    if (type === "wakfu-report-file" && acceptConnectedFile && file instanceof File) pick([file]);
+    if (type === "wakfu-report-error" && acceptConnectedFile) $("meta").textContent = "No se ha podido abrir el registro conectado. Puedes elegir el archivo.";
+  });
+  parent.postMessage({ type: "wakfu-report-ready" }, hostOrigin);
+}
+</script></body></html>

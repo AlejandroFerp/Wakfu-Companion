@@ -433,20 +433,27 @@ button.reset-btn:hover {
 }
 .meter-tab {
   flex-grow: 1;
+  align-self: stretch;
+  height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   padding: 12px 10px;
+  font-family: inherit;
   font-size: 0.9rem;
   font-weight: bold;
+  text-transform: uppercase;
   color: #888;
   background: #222;
   cursor: pointer;
+  border: 0;
+  border-radius: 0;
   border-bottom: 3px solid transparent;
   transition: all 0.2s;
   user-select: none;
 }
+.meter-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; }
 .tab-icon {
   width: 20px;
   height: 20px;
@@ -731,11 +738,6 @@ button.reset-btn:hover {
   font-family: monospace;
   color: #555;
   text-align: right;
-}
-.spell-hit-summary {
-  padding: 0 16px 7px 35px;
-  color: #a8b6bf;
-  font-size: 0.72rem;
 }
 
 /* --- Item Tracker --- */
@@ -1051,9 +1053,6 @@ button.reset-btn:hover {
 .combat-log-resource { color: #c4a0ff; }
 .combat-log-indicator { flex: none; color: #ffd66b; font-weight: bold; }
 .combat-spell-icon { width: 24px; height: 24px; object-fit: contain; flex: none; vertical-align: middle; }
-.personal-combat-detail { padding: 8px; color: #ccc; font-size: .8rem; }
-.personal-combat-log { max-height: 180px; overflow-y: auto; margin-top: 6px; }
-.personal-combat-log > div { padding: 3px 0; border-bottom: 1px solid #333; overflow-wrap: anywhere; }
 .combat-log-reference { padding: 0 8px 8px; color: #aaa; font-size: 0.75rem; }
 .combat-log-reference summary { cursor: pointer; color: #b7c8d3; padding: 4px 0; }
 .combat-log-reference label { display: inline-flex; align-items: center; gap: 5px; margin-right: 8px; }
@@ -3436,4 +3435,29 @@ body.pip-window .empty-state {
 @media (max-width: 800px) {
   .panels-container { grid-template-columns: minmax(0,1fr); grid-template-areas: "meter" "tracker" "combat"; grid-template-rows: auto auto minmax(380px,1fr); }
   .meter-panel { min-height: 300px; }
+}
+
+/* The report gets the full workspace, while the three meters keep their compact layout. */
+#tab-details.active { border-bottom-color: var(--accent); color: var(--accent); }
+#combat-details {
+  display: block;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  border: 0;
+  background: var(--panel-bg);
+}
+#combat-details[hidden] { display: none; }
+.show-combat-details .panels-container { display: flex; }
+.show-combat-details .meter-panel { flex: 1; min-width: 0; }
+.show-combat-details #setup-panel,
+.show-combat-details .panels-container > :not(.meter-panel),
+.show-combat-details .meter-panel > :not(.tab-header, #combat-details),
+.show-combat-details .meter-panel .pip-btn { display: none !important; }
+@media (max-width: 1100px) {
+  .tab-header .meter-tab { gap: 4px; padding-inline: 5px; font-size: 0.78rem; }
+  .tab-header .tab-icon { width: 15px; height: 15px; }
+}
+@media (max-width: 400px) {
+  .tab-header .tab-icon { display: none; }
 }

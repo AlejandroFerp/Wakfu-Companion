@@ -17,11 +17,10 @@ document.getElementById('app').onload=async()=>{
     if(!row || !row.textContent.includes('0')) throw Error('El personaje sin daño no aparece');
     row.querySelector('.player-row').click();
     row=d.querySelector('.player-block[data-name="Apoyo"]');
-    if(!row.textContent.includes('Lanza Piratería')) throw Error('No se muestra su registro personal');
     content += '12:00:01,000 - [Información (combate)] Luchador lanza el hechizo Piratería.\n12:00:02,000 - [Información (combate)] Objetivo: -50 PdV (agua)\n12:00:03,000 - [Información (combate)] Combate terminado.\n';
     await app.parseFile();d.getElementById('btn-hist-0').click();
     row=d.querySelector('.player-block[data-name="Apoyo"]');
-    if(!row || !row.textContent.includes('Lanza Piratería')) throw Error('No se guardó el personaje sin daño en el historial');
+    if(!row || !row.querySelector('.player-total')?.textContent.includes('0')) throw Error('No se guardó el personaje sin daño en el historial');
     result.textContent='PRUEBA CORRECTA';
   }catch(error){result.textContent='PRUEBA FALLIDA: '+error.message;}
 };

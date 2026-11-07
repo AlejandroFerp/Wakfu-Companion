@@ -226,55 +226,10 @@ function renderMeter() {
         const spellContainer = document.createElement("div");
         spellContainer.className = "spell-list open";
 
-        const events = currentViewIndex === "live" ? (personalCombatEvents[p.name] || []) : (fightHistory[currentViewIndex]?.personalEvents?.[p.name] || []);
-        const turns = currentViewIndex === "live" ? (personalTurns[p.name] || 0) : (fightHistory[currentViewIndex]?.personalTurns?.[p.name] || 0);
-        const detail = document.createElement("div");
-        detail.className = "personal-combat-detail";
-        const summary = document.createElement("div");
-        const markedDamage = currentViewIndex === "live" ? (personalTurnDamage[p.name] || 0) : (fightHistory[currentViewIndex]?.personalTurnDamage?.[p.name] || 0);
-        summary.textContent = turns ? `Daño medio por turno observado: ${Math.round(markedDamage / turns).toLocaleString()} · ${turns} turno(s) · identificación estimada cuando procede` : "Sin turnos identificados; el daño anterior permanece sin asignar.";
-        detail.appendChild(summary);
-        if (turns) {
-          const totals = currentViewIndex === "live" ? (personalDamageByTurn[p.name] || {}) : (fightHistory[currentViewIndex]?.personalDamageByTurn?.[p.name] || {});
-          const turnsSummary = document.createElement("div");
-          const firstTurn = Math.max(1, turns - 19);
-          const sources = currentViewIndex === "live" ? (personalTurnSources[p.name] || {}) : (fightHistory[currentViewIndex]?.personalTurnSources?.[p.name] || {});
-          const healsAvailable = currentViewIndex === "live" || Boolean(fightHistory[currentViewIndex]?.personalHealingByTurn);
-          const shieldsAvailable = currentViewIndex === "live" || Boolean(fightHistory[currentViewIndex]?.personalArmorByTurn);
-          const heals = currentViewIndex === "live" ? (personalHealingByTurn[p.name] || {}) : (fightHistory[currentViewIndex]?.personalHealingByTurn?.[p.name] || {});
-          const shields = currentViewIndex === "live" ? (personalArmorByTurn[p.name] || {}) : (fightHistory[currentViewIndex]?.personalArmorByTurn?.[p.name] || {});
-          turnsSummary.textContent = Array.from({ length: turns - firstTurn + 1 }, (_, i) => {
-            const number = firstTurn + i;
-            return `Turno ${number} (${sources[number] === "estimated" ? "estimado" : "marcado"}): ${typeof totals[number] === "number" ? totals[number].toLocaleString() : "sin datos"} daño · ${healsAvailable ? (heals[number] || 0).toLocaleString() : "—"} curas · ${shieldsAvailable ? (shields[number] || 0).toLocaleString() : "—"} armadura`;
-          }).join(" · ");
-          detail.appendChild(turnsSummary);
-        }
-        const log = document.createElement("div");
-        log.className = "personal-combat-log";
-        if (!events.length) log.textContent = "Sin acciones registradas para este combate.";
-        for (const event of events) {
-          const entry = document.createElement("div");
-          const turn = event.turn ? `Turno ${event.turn} (${event.turnSource === "estimated" ? "estimado" : "marcado"})` : "Turno sin identificar";
-          const description = event.type === "cast" ? `Lanza ${event.spell}` : event.type === "damage" ? `${event.spell}: ${event.amount.toLocaleString()} de daño atribuido` : event.type === "heal" ? `${event.spell}: ${event.amount.toLocaleString()} de curas atribuidas` : event.type === "armor" ? `${event.spell}: ${event.amount.toLocaleString()} de armadura atribuida` : event.type === "affected" ? `Evento sobre el personaje: ${event.message}` : event.turnSource === "estimated" ? "Inicio de turno estimado" : "Inicio de turno marcado";
-          const abilityIcon = event.spell && typeof getCombatSpellIcon === "function" ? getCombatSpellIcon(event.spell) : null;
-          if (abilityIcon) {
-            const icon = document.createElement("img");
-            icon.className = "combat-spell-icon";
-            icon.src = abilityIcon;
-            icon.alt = "";
-            entry.appendChild(icon);
-          }
-          if (event.spell && typeof getCombatSpellDescription === "function") entry.title = getCombatSpellDescription(event.spell) || "";
-          entry.appendChild(document.createTextNode(`${event.time || "--:--:--"} · ${turn} · ${description}`));
-          log.appendChild(entry);
-        }
-        detail.appendChild(log);
-
         const spells = Object.entries(p.spells)
           .map(([key, data]) => ({
             val: data.val,
             element: data.element,
-            hitStats: data.hitStats,
             realName: data.realName || key.split("|")[0],
           }))
           .sort((a, b) => b.val - a.val);
@@ -287,11 +242,6 @@ function renderMeter() {
             p.total > 0 ? ((s.val / p.total) * 100).toFixed(1) + "%" : "0.0%";
           let iconName = (s.element || "neutral").toLowerCase();
           const abilityIcon = typeof getCombatSpellIcon === "function" ? getCombatSpellIcon(s.realName) : null;
-          const stats = s.hitStats;
-          const hitSummary = stats && stats.count
-            ? `${stats.count} impactos · mín. ${stats.min.toLocaleString()} · máx. ${stats.max.toLocaleString()} · media ${Math.round(stats.total / stats.count).toLocaleString()}${stats.partial ? " · parcial" : ""}`
-            : "Estadísticas de impactos no disponibles";
-
           spellsHtml += `
                 <div class="spell-row">
                     <div class="spell-bg-bar" style="width: ${spellBarPercent}%"></div>
@@ -302,12 +252,11 @@ function renderMeter() {
                     </div>
                     <div class="spell-val">${s.val.toLocaleString()}</div>
                     <div class="spell-percent">${spellContribPercent}</div>
-                </div><div class="spell-hit-summary" title="Cada impacto es una línea de efecto del registro; los lanzamientos pueden incluir varios impactos.">${hitSummary}</div>`;
+                </div>`;
         }
         const aggregate = document.createElement("div");
         aggregate.innerHTML = spellsHtml;
         spellContainer.appendChild(aggregate);
-        spellContainer.appendChild(detail);
         rowBlock.appendChild(spellContainer);
       }
 
@@ -564,16 +513,25 @@ function updateWatchdogUI() {
 }
 
 function switchMeterMode(mode) {
+  const modes = ["damage", "healing", "armor", "details"];
+  if (!modes.includes(mode)) return;
+  for (const tab of modes) {
+    const button = document.getElementById("tab-" + tab);
+    button.classList.toggle("active", mode === tab);
+    button.setAttribute("aria-pressed", String(mode === tab));
+  }
+  const details = mode === "details";
+  document.querySelector(".main-content").classList.toggle("show-combat-details", details);
+  const report = document.getElementById("combat-details");
+  report.hidden = !details;
+
+  if (details) {
+    if (!report.hasAttribute("src")) report.src = report.dataset.src;
+    else report.contentWindow.postMessage({ type: "wakfu-report-status", connected: Boolean(fileHandle) }, "*");
+    return;
+  }
+
   activeMeterMode = mode;
-  document
-    .getElementById("tab-damage")
-    .classList.toggle("active", mode === "damage");
-  document
-    .getElementById("tab-healing")
-    .classList.toggle("active", mode === "healing");
-  document
-    .getElementById("tab-armor")
-    .classList.toggle("active", mode === "armor");
 
   if (pipWindow && pipWindow.document) {
     const pDmg = pipWindow.document.getElementById("pip-tab-damage");

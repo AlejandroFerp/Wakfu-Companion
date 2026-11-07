@@ -34,7 +34,7 @@ document.getElementById('app').onload = async () => {
     if(state.personalCombatEvents.Alfa.filter(e=>e.type==='cast').length!==2) throw Error('No se filtró el lanzamiento duplicado');
     const row=app.document.querySelector('.player-block[data-name="Alfa"] .player-row');if(!row)throw Error('No aparece el jugador');row.click();
     const block=app.document.querySelector('.player-block[data-name="Alfa"]');
-    if(!block.textContent.includes('Turno 2 (estimado): 300 daño · 120 curas · 75 armadura')) throw Error('Falta el desglose visible');
+    if(block.querySelector('.personal-combat-detail')) throw Error('El medidor vuelve a mezclar el detalle con el resumen');
     app.performReset(); app.processLine('12:00:19,000 - [Información (combate)] Alfa: se desplaza 2 casillas'); app.processLine('12:00:20,000 - [Información (combate)] Alfa lanza el hechizo Piratería.'); app.processLine('12:00:21,000 - [Información (combate)] Objetivo: -50 PdV (fuego)'); app.saveLiveCombatState();
     const history=JSON.parse(app.localStorage.getItem('wakfu_fight_history'));
     if(history[0]?.personalHealingByTurn?.Alfa?.['2']!==120 || history[0]?.personalArmorByTurn?.Alfa?.['2']!==75) throw Error('No se guardaron los detalles en el historial');
