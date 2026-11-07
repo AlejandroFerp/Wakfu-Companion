@@ -732,6 +732,11 @@ button.reset-btn:hover {
   color: #555;
   text-align: right;
 }
+.spell-hit-summary {
+  padding: 0 16px 7px 35px;
+  color: #a8b6bf;
+  font-size: 0.72rem;
+}
 
 /* --- Item Tracker --- */
 .tracker-controls {

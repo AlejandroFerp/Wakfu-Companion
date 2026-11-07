@@ -453,7 +453,14 @@ function updateCombatData(dataSet, player, spell, amount, element) {
 
   }
 
-  dataSet[player].spells[spellKey].val += amount;
+  const spellData = dataSet[player].spells[spellKey];
+  // Existing saved fights may predate hit statistics: retain that distinction.
+  if (!spellData.hitStats) spellData.hitStats = { count: 0, total: 0, min: null, max: null, partial: spellData.val > 0 };
+  spellData.hitStats.count++;
+  spellData.hitStats.total += amount;
+  spellData.hitStats.min = spellData.hitStats.min === null ? amount : Math.min(spellData.hitStats.min, amount);
+  spellData.hitStats.max = spellData.hitStats.max === null ? amount : Math.max(spellData.hitStats.max, amount);
+  spellData.val += amount;
 
 
 
@@ -807,7 +814,19 @@ function mergeSummonData(summon, master) {
 
         }
 
-        dataSet[master].spells[newKey].val += s.val;
+        const targetSpell = dataSet[master].spells[newKey];
+        const previousValue = targetSpell.val;
+        const sourceStats = s.hitStats;
+        if (sourceStats) {
+          const stats = targetSpell.hitStats || { count: 0, total: 0, min: null, max: null, partial: previousValue > 0 };
+          stats.count += sourceStats.count;
+          stats.total += sourceStats.total;
+          stats.min = stats.min === null ? sourceStats.min : Math.min(stats.min, sourceStats.min);
+          stats.max = stats.max === null ? sourceStats.max : Math.max(stats.max, sourceStats.max);
+          stats.partial ||= sourceStats.partial;
+          targetSpell.hitStats = stats;
+        } else if (targetSpell.hitStats && s.val) targetSpell.hitStats.partial = true;
+        targetSpell.val += s.val;
 
       });
 

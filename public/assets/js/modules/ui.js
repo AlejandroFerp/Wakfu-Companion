@@ -284,6 +284,7 @@ function renderMeter() {
           .map(([key, data]) => ({
             val: data.val,
             element: data.element,
+            hitStats: data.hitStats,
             realName: data.realName || key.split("|")[0],
           }))
           .sort((a, b) => b.val - a.val);
@@ -296,6 +297,10 @@ function renderMeter() {
             p.total > 0 ? ((s.val / p.total) * 100).toFixed(1) + "%" : "0.0%";
           let iconName = (s.element || "neutral").toLowerCase();
           const abilityIcon = typeof getCombatSpellIcon === "function" ? getCombatSpellIcon(s.realName) : null;
+          const stats = s.hitStats;
+          const hitSummary = stats && stats.count
+            ? `${stats.count} impactos · mín. ${stats.min.toLocaleString()} · máx. ${stats.max.toLocaleString()} · media ${Math.round(stats.total / stats.count).toLocaleString()}${stats.partial ? " · parcial" : ""}`
+            : "Estadísticas de impactos no disponibles";
 
           spellsHtml += `
                 <div class="spell-row">
@@ -307,7 +312,7 @@ function renderMeter() {
                     </div>
                     <div class="spell-val">${s.val.toLocaleString()}</div>
                     <div class="spell-percent">${spellContribPercent}</div>
-                </div>`;
+                </div><div class="spell-hit-summary" title="Cada impacto es una línea de efecto del registro; los lanzamientos pueden incluir varios impactos.">${hitSummary}</div>`;
         }
         const aggregate = document.createElement("div");
         aggregate.innerHTML = spellsHtml;
