@@ -230,15 +230,6 @@ function renderMeter() {
         const turns = currentViewIndex === "live" ? (personalTurns[p.name] || 0) : (fightHistory[currentViewIndex]?.personalTurns?.[p.name] || 0);
         const detail = document.createElement("div");
         detail.className = "personal-combat-detail";
-        if (currentViewIndex === "live") {
-          const mark = document.createElement("button");
-          mark.type = "button";
-          mark.className = "personal-turn-button";
-          mark.dataset.player = p.name;
-          mark.textContent = "Marcar inicio de turno";
-          mark.title = "Marca manualmente el inicio si no fue detectado; el siguiente aviso de turno cerrará el tramo.";
-          detail.appendChild(mark);
-        }
         const summary = document.createElement("div");
         const markedDamage = currentViewIndex === "live" ? (personalTurnDamage[p.name] || 0) : (fightHistory[currentViewIndex]?.personalTurnDamage?.[p.name] || 0);
         summary.textContent = turns ? `Daño medio por turno observado: ${Math.round(markedDamage / turns).toLocaleString()} · ${turns} turno(s) · identificación estimada cuando procede` : "Sin turnos identificados; el daño anterior permanece sin asignar.";
@@ -278,7 +269,6 @@ function renderMeter() {
           log.appendChild(entry);
         }
         detail.appendChild(log);
-        spellContainer.appendChild(detail);
 
         const spells = Object.entries(p.spells)
           .map(([key, data]) => ({
@@ -317,6 +307,7 @@ function renderMeter() {
         const aggregate = document.createElement("div");
         aggregate.innerHTML = spellsHtml;
         spellContainer.appendChild(aggregate);
+        spellContainer.appendChild(detail);
         rowBlock.appendChild(spellContainer);
       }
 
@@ -351,11 +342,6 @@ function setupDragAndDrop() {
       try { localStorage.setItem("wakfu_overrides", JSON.stringify(manualOverrides)); } catch (_) {}
       lastRenderSignature = "";
       renderMeter();
-      return;
-    }
-    const markTurn = e.target.closest(".personal-turn-button");
-    if (markTurn) {
-      markPersonalTurn(markTurn.dataset.player);
       return;
     }
     // Handle Icon Variant Toggle

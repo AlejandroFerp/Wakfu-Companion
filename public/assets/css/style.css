@@ -1052,7 +1052,6 @@ button.reset-btn:hover {
 .combat-log-indicator { flex: none; color: #ffd66b; font-weight: bold; }
 .combat-spell-icon { width: 24px; height: 24px; object-fit: contain; flex: none; vertical-align: middle; }
 .personal-combat-detail { padding: 8px; color: #ccc; font-size: .8rem; }
-.personal-turn-button { margin-bottom: 6px; cursor: pointer; }
 .personal-combat-log { max-height: 180px; overflow-y: auto; margin-top: 6px; }
 .personal-combat-log > div { padding: 3px 0; border-bottom: 1px solid #333; overflow-wrap: anywhere; }
 .combat-log-reference { padding: 0 8px 8px; color: #aaa; font-size: 0.75rem; }
