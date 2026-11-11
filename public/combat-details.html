@@ -87,9 +87,9 @@ th.cat{background:color-mix(in srgb,var(--cat) 26%,var(--panel));color:var(--cat
 <header><h1>Informe de combates de Wakfu</h1>
 <button class="btn" id="connected" type="button" hidden>Actualizar registro conectado</button>
 <label class="btn file-button">Abrir logs<input id="f" type="file" multiple></label><label style="cursor:pointer"><input id="pets" type="checkbox" checked> Sumar las mascotas a su dueño</label><span id="meta"></span></header>
-<div id="empty">Arrastra tu <b>wakfu_chat.log</b> (o varios a la vez: .1, .2…) a cualquier parte de esta página. Los logs se encuentran en "%AppData%\zaap\gamesLogs\wakfu\logs\"<br><br>
-  <button id="copy" class="btn" type="button">Copiar ruta al portapapeles</button><br>
-  <small>Pégala en la barra de direcciones del Explorador de archivos de Windows para llegar al log.</small></div>
+<div id="empty">Arrastra tu <b>wakfu_chat.log</b> (o varios a la vez: .1, .2…) a cualquier parte de esta página.<br><br>
+  <button id="copy" class="btn" type="button">Copiar ruta de Ankama Launcher 2</button><br>
+  <small>Pega la ruta en el Explorador de archivos de Windows. Con el launcher anterior, usa <code>%AppData%\zaap\gamesLogs\wakfu\logs\</code>.</small></div>
 <div id="order" class="mut" hidden></div>
 <nav id="tabs"></nav><div id="main" hidden></div>
 <script>
@@ -400,7 +400,7 @@ document.addEventListener("click",e=>{
     draw();
   }
 });
-const LOGDIR="%AppData%\\zaap\\gamesLogs\\wakfu\\logs\\";
+const LOGDIR="%AppData%\\zaap2\\repositories\\production\\wakfu\\main\\windows\\logs\\logs\\";
 $("copy").onclick=async e=>{const b=e.currentTarget,old=b.dataset.label||(b.dataset.label=b.textContent);
   try{await navigator.clipboard.writeText(LOGDIR)}
   catch(x){const t=document.createElement("textarea");t.value=LOGDIR;document.body.appendChild(t);t.select();document.execCommand("copy");t.remove()}

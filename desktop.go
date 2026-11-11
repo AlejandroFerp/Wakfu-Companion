@@ -18,6 +18,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -34,7 +35,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	logPath := filepath.Join(appdata, "zaap", "gamesLogs", "wakfu", "logs", "wakfu_chat.log")
 	data, err := assets.ReadFile("desktop-assets.zip")
 	if err != nil {
 		log.Fatal(err)
@@ -49,7 +49,7 @@ func main() {
 	}
 	prefix := "/" + token + "/"
 	mux := http.NewServeMux()
-	mux.HandleFunc(prefix+"api/log", combatLogHandler(logPath))
+	mux.HandleFunc(prefix+"api/log", desktopCombatLogHandler(appdata))
 	mux.HandleFunc(prefix+"desktop.js", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
 		fmt.Fprint(w, desktopJS)
@@ -94,6 +94,46 @@ func main() {
 	}
 	log.Printf("Wakfu Companion abierto. Cierra la aplicación con el botón Salir. Ruta local: %s", url)
 	log.Fatal(http.Serve(listener, mux))
+}
+
+func desktopCombatLogHandler(appdata string) http.HandlerFunc {
+	var mu sync.Mutex
+	var serveLog http.HandlerFunc
+	return func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		if serveLog == nil {
+			if path := latestWakfuChatLog(appdata); path != "" {
+				// Keep the same log directory for the lifetime of the desktop session.
+				serveLog = combatLogHandler(path)
+			}
+		}
+		handler := serveLog
+		mu.Unlock()
+		if handler == nil {
+			w.Header().Set("Cache-Control", "no-store")
+			http.Error(w, "Wakfu chat log not found", http.StatusServiceUnavailable)
+			return
+		}
+		handler(w, r)
+	}
+}
+
+func latestWakfuChatLog(appdata string) string {
+	launcher2 := filepath.Join(appdata, "zaap2", "repositories", "production", "wakfu")
+	candidates := []string{
+		filepath.Join(launcher2, "main", "windows", "logs", "logs", "wakfu_chat.log"),
+		filepath.Join(launcher2, "windows", "main", "logs", "logs", "wakfu_chat.log"),
+		filepath.Join(appdata, "zaap", "gamesLogs", "wakfu", "logs", "wakfu_chat.log"),
+	}
+	var latest string
+	var modified time.Time
+	for _, path := range candidates {
+		info, err := os.Stat(path)
+		if err == nil && info.Mode().IsRegular() && (latest == "" || info.ModTime().After(modified)) {
+			latest, modified = path, info.ModTime()
+		}
+	}
+	return latest
 }
 
 func combatLogHandler(logPath string) http.HandlerFunc {

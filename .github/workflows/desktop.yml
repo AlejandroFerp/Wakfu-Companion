@@ -35,7 +35,7 @@ jobs:
         run: |
           $tag = 'desktop-' + $env:GITHUB_SHA.Substring(0, 12)
           $title = 'Wakfu Companion para Windows · ' + $env:GITHUB_SHA.Substring(0, 7)
-          $notes = "Versión de escritorio para Windows. Requiere Microsoft Edge. Código: $env:GITHUB_SHA."
+          $notes = "Incluye la pestaña Combate actual y detección del registro de Ankama Launcher 2. Requiere Microsoft Edge. Código: $env:GITHUB_SHA."
           gh release view $tag --json tagName --jq .tagName 2>$null
           if ($LASTEXITCODE -eq 0) {
             gh release upload $tag WakfuCompanion.exe --clobber
