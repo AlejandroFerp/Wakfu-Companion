@@ -3,7 +3,8 @@
 Este repositorio es un fork de [Nexus-Hub/Wakfu-Companion](https://github.com/Nexus-Hub/Wakfu-Companion), adaptado progresivamente a registros de combate en español. El proyecto original se describe más abajo; algunas funciones de esa descripción no están visibles en este fork.
 
 - **Web:** [Abrir Wakfu Companion](https://alejandroferp.github.io/Wakfu-Companion/).
-- **Windows:** [Descargar la última versión de escritorio](https://github.com/AlejandroFerp/Wakfu-Companion/releases/latest). El prototipo usa Go y abre la interfaz en una ventana de Microsoft Edge.
+- **Windows:** [Descargar WakfuCompanion.exe](https://github.com/AlejandroFerp/Wakfu-Companion/releases/latest/download/WakfuCompanion.exe). Abre el ejecutable para iniciar la aplicación en una ventana de Microsoft Edge.
+- **Combate actual:** abre «Detalles» para ver el combate en curso y el historial por separado. La pestaña «Combate actual» muestra si está esperando los primeros eventos.
 - **Uso:** con el juego abierto, selecciona `wakfu_chat.log` desde `%AppData%\zaap\gamesLogs\wakfu\logs\`. La aplicación de escritorio busca ese archivo automáticamente y procesa los eventos posteriores a la conexión. Para cerrarla, pulsa «Salir de la aplicación».
 - **Incluye:** medidor de combate, registro cronológico en español y seguimiento experimental de hipermago y selotrop. Los iconos y descripciones adicionales se importan mediante JSON exportados desde la instalación local del juego.
 - **Limitaciones:** la atribución de eventos y el turno pueden ser inciertos; el OCR aún no está integrado. Portal Celestial no cuenta automáticamente dos finales de turno hasta disponer de una señal que identifique al personaje. La ventana flotante depende del navegador y no se ha validado en todos los modos de pantalla del juego.

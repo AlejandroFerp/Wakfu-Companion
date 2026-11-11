@@ -268,7 +268,7 @@ function fightName(F){
 }
 function load(text,name,info,connected=false,automatic=false){
   const fights = parse(text);
-  if(!fights.length&&!fights.current){$("meta").textContent="No se han encontrado combates en "+name;return}
+  if(!connected&&!fights.length&&!fights.current){$("meta").textContent="No se han encontrado combates en "+name;return}
   const oldStart=(S.fights[0]||S.fights.current)?.t0;
   const newStart=(fights[0]||fights.current)?.t0;
   const sameLog=automatic&&S.connectedName===name&&oldStart===newStart&&fights.length>=S.fights.length;
@@ -286,7 +286,7 @@ function load(text,name,info,connected=false,automatic=false){
     if(isAlly)S.players.add(player);
     else S.players.delete(player);
   }
-  if(!sameLog||showingCurrent)S.sel=fights.current?fights.length+1:fights.length-1;
+  if(!sameLog||showingCurrent)S.sel=connected||fights.current?fights.length+1:fights.length-1;
   else if(showingTotal)S.sel=fights.length;
   S.currentLabel=connected?"Combate actual":"Último combate sin cierre";
   $("meta").textContent=`${name} · ${fights.length} ${fights.length===1?"combate anterior":"combates anteriores"}`;
@@ -303,14 +303,19 @@ function draw(){
   const list=[...S.fights.map((F,i)=>[F,`${i+1}. ${esc(fightName(F)||"Combate")}`,`${F.clock} · ${mmss(F.dur)}`,zone(i)]),[S.all,"Todos los combates",`${incl.length} de ${S.fights.length} incluidos · ${mmss(S.all.dur)}`]];
   const current=S.fights.current;
   const currentIndex=S.fights.length+1;
-  if(current)list.push([current,S.currentLabel,`${current.clock} · Sin cierre en el registro`]);
+  const showCurrent=current||S.connectedName;
+  if(showCurrent)list.push([current,S.currentLabel,current?`${current.clock} · Sin cierre en el registro`:"Esperando un combate"]);
+  const tabs=list.map(([F,a,b,z],i)=>`<button data-i="${i}" class="${i===S.sel?"on":""}${S.off.has(i)?" off":""}">${z?`<small class="zone">${esc(z)}</small>`:""}<b>${a}</b><small>${b}</small></button>`);
+  if(showCurrent)tabs.unshift(tabs.pop());
+  $("tabs").innerHTML=tabs.join("");
+  if(showCurrent&&S.sel===currentIndex&&!current){
+    $("main").innerHTML='<p class="mut">No hay un combate en curso. Las estadísticas aparecerán con el primer evento de combate que registre Wakfu.</p>';
+    return;
+  }
   const base=S.sel===currentIndex&&current?current:S.fights[S.sel]||S.all;
   const ct=Object.create(null);(base===S.all?incl:[base]).forEach(F=>{const c=charTurns(F);for(const k in c)ct[k]=(ct[k]||0)+c[k]});
   const cur=applyPets(base,ct,S.pets);
   const kids=S.pets&&S.unit?Object.keys(base.units).filter(n=>n!==S.unit&&S.players.has(S.unit)&&rootOf(n)===S.unit):[];
-  const tabs=list.map(([F,a,b,z],i)=>`<button data-i="${i}" class="${i===S.sel?"on":""}${S.off.has(i)?" off":""}">${z?`<small class="zone">${esc(z)}</small>`:""}<b>${a}</b><small>${b}</small></button>`);
-  if(current)tabs.unshift(tabs.pop());
-  $("tabs").innerHTML=tabs.join("");
   const names=Object.keys(cur.units).filter(n=>{const u=cur.units[n];return u.dmg||u.heal||u.armor||u.taken||(base===current&&u.casts)});
   const group=p=>names.filter(n=>S.players.has(n)===p).sort((a,b)=>{const{k,d}=S.usort,A=cur.units[a],B=cur.units[b];
     const v=(x,n)=>k==="name"?n:k==="dpt"?(x.turns?x.dmg/x.turns:0):x[k];
@@ -458,7 +463,11 @@ async function pick(files,connected=false,automatic=false){
     return;
   }
   if (version !== importVersion) return;
-  if(!items.length){$("meta").textContent="No se reconoce ningún log de Wakfu en los archivos elegidos";return}
+  if(!items.length){
+    if(connected)load("",files[0].name,"",true,automatic);
+    else $("meta").textContent="No se reconoce ningún log de Wakfu en los archivos elegidos";
+    return;
+  }
   const ord=orderFiles(items);let info="";
   if(ord.length>1){info="Orden de los archivos: "+ord.map(x=>x.name).join(" → ");
     for(let i=1;i<ord.length;i++){const g=gap(ord[i-1],ord[i]);
